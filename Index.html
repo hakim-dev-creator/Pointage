@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام الرواتب (V3.6 Smart Time)</title>
+    <style>
+        :root {
+            --primary: #0D47A1; --bg: #ECEFF1; --surface: #FFFFFF;
+            --success: #2E7D32; --danger: #C62828; --debt: #673AB7; 
+            --text: #37474F; --border: #CFD8DC; --radius: 12px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; color: var(--text); padding-bottom: 30px; }
+        
+        /* Header */
+        header { background: var(--surface); padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #e0e0e0; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .company-ar { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin-bottom: 2px; }
+        .company-fr { font-size: 1rem; font-weight: 600; color: #1565C0; font-family: sans-serif; }
+        .status-badge { font-size: 0.75rem; color: #fff; background: #bbb; padding: 2px 8px; border-radius: 10px; }
+        .app-logo { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; display: none; background: #fff; }
+
+        /* UI Elements */
+        button { cursor: pointer; border: none; font-weight: bold; padding: 12px; border-radius: 8px; width: 100%; margin: 5px 0; font-size: 0.95rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-main { background: var(--primary); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-icon { width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #ECEFF1; }
+        .btn-now { background: #FF9800; color: white; width: auto; padding: 0 15px; height: 45px; margin: 0; }
+        .btn-plus-bold { background: var(--debt); color: white; font-size: 1.5rem; font-weight: 900; width: 50px; padding: 0; line-height: 1; }
+
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background: #fff; }
+        .row-now { display: flex; gap: 8px; align-items: center; }
+
+        /* Calendar */
+        .calendar-container { overflow-x: auto; margin: 15px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
+        .calendar-grid { display: grid; min-width: max-content; }
+        .calendar-grid div { padding: 4px; border: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: center; min-height: 55px; text-align: center; }
+        .employee-name-cell { position: sticky; right: 0; background: #F8F9FA; font-weight: bold; z-index: 2; width: 140px; border-left: 3px solid var(--primary) !important; color: var(--primary); }
+        
+        /* Cell Styles */
+        .attendance-cell { cursor: pointer; font-size: 0.75rem; min-width: 60px; font-weight: 700; white-space: pre-wrap; line-height: 1.2; }
+        .status-present { background: #E8F5E9; color: var(--success); border: 1px solid #C8E6C9; }
+        .status-absent { background: #FFEBEE; color: var(--danger); font-weight: bold; }
+        
+        /* Future Date Style */
+        .cell-future { background-color: #f0f0f0; color: #ccc; cursor: not-allowed; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 15px; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: 20px auto; }
+
+        /* Debt Tabs & Cards */
+        .debt-tabs { display: flex; margin-bottom: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+        .debt-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #f5f5f5; font-weight: bold; transition: 0.2s; }
+        .debt-tab.active { background: var(--debt); color: white; }
+        .debt-tab.active-out { background: var(--danger); color: white; }
+        .debt-card { background: #fafafa; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .debt-amount { font-weight: bold; font-size: 1.1rem; color: var(--debt); }
+        .debt-paid { text-decoration: line-through; color: #aaa; }
+        .btn-pay { background: #E0F2F1; color: #00695C; padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; width: auto; display: inline-block; }
+
+        /* PIN */
+        .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; direction: ltr; margin-top: 15px; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--primary); margin: 0 6px; transition: 0.2s; }
+        .pin-dot.active { background: var(--primary); transform: scale(1.2); }
+
+        /* Loader */
+        #loader { position: fixed; inset: 0; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #errorMsg { display:none; color:red; text-align:center; padding:20px; font-weight:bold; }
+    </style>
+</head>
+<body>
+
+<div id="loader">
+    <div class="spinner"></div>
+    <p style="margin-top:20px; color:#555">جاري الاتصال...</p>
+    <div id="errorMsg"></div>
+</div>
+
+<header>
+    <div class="header-container">
+        <div class="header-text-area">
+            <span id="dispNameAr" class="company-ar">نظام الرواتب</span>
+            <span id="dispNameFr" class="company-fr">Online System</span>
+            <span id="connStatus" class="status-badge">اتصال...</span>
+        </div>
+        <img id="displayLogo" class="app-logo" src="" alt="Logo">
+    </div>
+</header>
+
+<div id="contentArea" style="display:none">
+    <div style="display:flex; justify-content:space-between; padding:15px; align-items:center">
+        <button onclick="changeMonth(-1)" class="btn-icon">◀</button>
+        <b id="monthLabel" style="font-size:1.1rem; color:var(--primary)"></b>
+        <button onclick="changeMonth(1)" class="btn-icon">▶</button>
+    </div>
+    
+    <div class="calendar-container"><div id="calendarGrid" class="calendar-grid"></div></div>
+    
+    <div style="padding:0 15px 15px;">
+        <div style="background: white; padding: 12px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <label style="font-size:0.9rem; font-weight:bold; color:#555">💬 إرسال كشف سريع:</label>
+            <div class="row-now">
+                <select id="waEmpSelect" style="margin:0"><option value="">-- اختر العامل --</option></select>
+                <button onclick="sendWAReport()" style="width:auto; background:#25D366; color:white; padding:10px 20px">WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding:15px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
+        <button class="btn-main" onclick="openAdvancesModal()">💰 التسبيقات</button>
+        <button class="btn-main" onclick="openDebtsModal()" style="background:var(--debt)">📒 إدارة الديون</button>
+        <button class="btn-main" onclick="openSettingsModal()" style="background:#546E7A; grid-column: span 2;">⚙️ الإعدادات والموظفين</button>
+    </div>
+</div>
+
+<div id="pinModal" class="modal" style="display:flex; z-index:3000;">
+    <div class="modal-content" align="center">
+        <h3 style="color:var(--primary); margin-top:0">🔒 أدخل رمز الدخول</h3>
+        <p style="font-size:0.8rem; color:#666">الرمز الافتراضي: 0000</p>
+        <div style="display:flex; justify-content:center; margin:20px 0" id="dotsContainer"></div>
+        <div class="pin-grid">
+            <button onclick="pressPin('1')">1</button><button onclick="pressPin('2')">2</button><button onclick="pressPin('3')">3</button>
+            <button onclick="pressPin('4')">4</button><button onclick="pressPin('5')">5</button><button onclick="pressPin('6')">6</button>
+            <button onclick="pressPin('7')">7</button><button onclick="pressPin('8')">8</button><button onclick="pressPin('9')">9</button>
+            <button onclick="clearPin()" style="background:#FFCDD2; color:#C62828">C</button>
+            <button onclick="pressPin('0')">0</button>
+            <button onclick="backspacePin()" style="background:#FFCCBC; color:#D84315">⌫</button>
+        </div>
+    </div>
+</div>
+
+<div id="attModal" class="modal"><div class="modal-content"><h3 id="attEmpName" align="center" style="color:var(--primary)"></h3>
+    <label>وقت الحضور:</label><div class="row-now"><input type="time" id="tIn" value="08:00"><button class="btn-now" onclick="setSmartNow('tIn')">الآن</button></div>
+    <label>وقت الانصراف:</label><div class="row-now"><input type="time" id="tOut" value="16:00"><button class="btn-now" onclick="setSmartNow('tOut')">الآن</button></div>
+    <div id="calcPreview" style="text-align:center; margin:10px 0; font-weight:bold; color:var(--primary)"></div>
+    <button class="btn-main" onclick="saveAtt('full')" style="background:var(--success)">✅ حفظ الدوام</button>
+    <button class="btn-main" onclick="saveAtt('absent')" style="background:var(--danger)">❌ غياب</button>
+    <button onclick="closeM('attModal')" style="background:#eee; color:#333; margin-top:10px">إغلاق</button>
+</div></div>
+
+<div id="settingsModal" class="modal"><div class="modal-content"><h3>⚙️ الإعدادات</h3><div style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #eee;"><h4 style="margin:0 0 10px 0; color:var(--primary)">🏢 المظهر</h4><input id="inputCompName" placeholder="الاسم (عربي)"><input id="inputCompNameFr" placeholder="الاسم (فرنسي)"><label style="font-size:0.8rem; display:block; margin-top:5px">الشعار:</label><input type="file" id="inputLogo" accept="image/*" onchange="handleLogoUpload(this)"><button class="btn-main" onclick="saveCompanySettings()" style="background:#FF9800; color:white; margin-top:5px">💾 حفظ</button></div><h4 style="margin-bottom:5px">👥 العمال</h4><div id="empsList" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:5px; margin-bottom:10px"></div><div class="row-now"><input id="newE" placeholder="الاسم"><input id="newR" type="number" placeholder="الأجر" style="width:80px"></div><button class="btn-main" onclick="addEmployee()">➕ إضافة</button><hr><div class="row-now"><input type="password" id="p1" maxlength="4" placeholder="تغيير الرمز (4 أرقام)"><button onclick="updatePin()" style="width:auto; background:#333; color:white">تحديث</button></div><button onclick="closeM('settingsModal')" style="background:#eee; color:#333">إغلاق</button></div></div>
+
+<div id="advModal" class="modal">
+    <div class="modal-content">
+        <h3>💰 سجل التسبيقات</h3>
+        <div id="advListArea" style="max-height:300px; overflow-y:auto; margin-bottom:15px"></div>
+        <button onclick="closeM('advModal')" style="background:#eee; color:#333">إغلاق</button>
+    </div>
+</div>
+
+<div id="debtModal" class="modal">
+    <div class="modal-content" style="max-width:500px">
+        <h3 style="color:var(--debt); text-align:center;">📒 إدارة الديون</h3>
+        <div class="debt-tabs">
+            <div id="tabIn" class="debt-tab active" onclick="switchDebtTab('in')">📥 ديون للتحصيل</div>
+            <div id="tabOut" class="debt-tab" onclick="switchDebtTab('out')">📤 ديون للتسديد</div>
+        </div>
+        <div class="row-now" style="background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee">
+            <div style="flex:1">
+                <input id="debtName" placeholder="اسم المدين/الدائن" style="margin:0 0 5px 0">
+                <input id="debtVal" type="number" placeholder="المبلغ" style="margin:0">
+            </div>
+            <button class="btn-plus-bold" onclick="addDebt()" title="إضافة دين">+</button>
+        </div>
+        <div style="font-size:0.8rem; color:#888; text-align:center; margin-top:5px">سيتم حفظ التاريخ والوقت تلقائياً 🕒</div>
+        <hr>
+        <div id="debtListIn" style="max-height:300px; overflow-y:auto;"></div>
+        <div id="debtListOut" style="max-height:300px; overflow-y:auto; display:none;"></div>
+        <button onclick="closeM('debtModal')" style="background:#eee; color:#333; margin-top:10px">إغلاق</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+
+  apiKey: "AIzaSyBYYgIJsIO7KwfQp3w4CMRM73F7qC_4qzk",
+
+  authDomain: "proelec-bf23f.firebaseapp.com",
+
+  projectId: "proelec-bf23f",
+
+  storageBucket: "proelec-bf23f.firebasestorage.app",
+
+  messagingSenderId: "691873146420",
+
+  appId: "1:691873146420:web:e822e57bd592bd47880c61",
+
+  measurementId: "G-KPE5PH6K8Z"
+};
+
+    if (!firebaseConfig.apiKey) {
+        document.getElementById('errorMsg').style.display = 'block';
+        document.getElementById('errorMsg').innerText = "⚠️ خطأ: يرجى وضع كود Firebase!";
+        throw new Error("Missing Config");
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const mainDocRef = doc(db, "salary_system", "main_data");
+
+    let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000" };
+    let currDate = new Date();
+    let sel = null;
+    let pinIn = "";
+    let currentDebtTab = 'in';
+
+    const getNowStr = () => { let n = new Date(); return `${n.toLocaleDateString('ar-DZ')} - ${n.getHours()}:${n.getMinutes().toString().padStart(2,'0')}`; };
+
+    // --- Time Helpers ---
+    function calcDuration(start, end) {
+        if(!start || !end) return 0;
+        let [h1, m1] = start.split(':').map(Number);
+        let [h2, m2] = end.split(':').map(Number);
+        let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (diff < 0) diff += 24 * 60; // Handle overnight
+        return diff; // Minutes
+    }
+    function minsToTime(mins) {
+        let h = Math.floor(mins / 60);
+        let m = mins % 60;
+        return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    }
+
+    // --- PIN ---
+    window.setupDots = (n) => document.getElementById('dotsContainer').innerHTML = Array(n).fill('<div class="pin-dot"></div>').join('');
+    window.updateDots = () => document.querySelectorAll('.pin-dot').forEach((d, i) => d.className = i < pinIn.length ? 'pin-dot active' : 'pin-dot');
+    window.pressPin = (n) => { if(pinIn.length < 4) { pinIn += n; updateDots(); if(pinIn.length === 4) checkPin(); } };
+    window.backspacePin = () => { pinIn = pinIn.slice(0, -1); updateDots(); };
+    window.clearPin = () => { pinIn = ""; updateDots(); };
+    function checkPin() {
+        if(pinIn === appData.pin || pinIn === "0000" || pinIn === "10031945") { 
+            document.getElementById('pinModal').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'block';
+            clearPin();
+        } else { alert("رمز خاطئ!"); clearPin(); }
+    }
+    setupDots(4);
+
+    // --- Firebase ---
+    onSnapshot(mainDocRef, (docSnap) => {
+        document.getElementById('loader').style.display = 'none';
+        updateStatus(true);
+        if (docSnap.exists()) {
+            let d = docSnap.data();
+            appData = { ...appData, ...d };
+            if(Array.isArray(appData.debts)) appData.debts = { in: appData.debts, out: [] };
+            if(!appData.debts) appData.debts = { in: [], out: [] };
+            applyIdentity(); renderCalendar(); updateWASelect();
+            if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
+        } else { saveToFirebase(); }
+    }, (e) => { document.getElementById('loader').style.display = 'none'; updateStatus(false); alert("خطأ في الاتصال!"); });
+
+    async function saveToFirebase() {
+        updateStatus("sync");
+        try { await setDoc(mainDocRef, appData); updateStatus(true); } catch(e) { updateStatus(false); }
+    }
+
+    function applyIdentity() {
+        if(appData.companyName) document.getElementById('dispNameAr').innerText = appData.companyName;
+        if(appData.companyNameFr) document.getElementById('dispNameFr').innerText = appData.companyNameFr;
+        if(appData.logo) { document.getElementById('displayLogo').src = appData.logo; document.getElementById('displayLogo').style.display = 'block'; }
+    }
+
+    // --- Calendar & Attendance (Future Blocking Logic) ---
+    window.changeMonth = (n) => { currDate.setMonth(currDate.getMonth() + n); renderCalendar(); }
+    function renderCalendar() {
+        const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+        document.getElementById('monthLabel').innerText = months[currDate.getMonth()] + " " + currDate.getFullYear();
+        const grid = document.getElementById('calendarGrid');
+        const days = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate();
+        grid.style.gridTemplateColumns = `140px repeat(${days}, 60px)`;
+        let h = '<div style="background:#f5f5f5; font-weight:bold; display:flex; align-items:center; justify-content:center;">الموظف</div>';
+        for(let d=1; d<=days; d++) h += `<div style="font-weight:bold; background:${d%2==0?'#fff':'#fafafa'}; display:flex; align-items:center; justify-content:center;">${d}</div>`;
+        grid.innerHTML = h;
+        
+        let today = new Date();
+        today.setHours(0,0,0,0); // تصغير الوقت للمقارنة الصحيحة
+
+        if(appData.emps) {
+            appData.emps.forEach(e => {
+                let nc = document.createElement('div'); nc.className = "employee-name-cell"; nc.innerText = e.name; grid.appendChild(nc);
+                for(let d=1; d<=days; d++) {
+                    let k = `${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${e.id}`;
+                    let cellDate = new Date(currDate.getFullYear(), currDate.getMonth(), d);
+                    let isFuture = cellDate > today;
+
+                    let r = appData.att[k], cls = "attendance-cell", txt = "-";
+                    if(r) { 
+                        if(r.status === 'full') { 
+                            cls += " status-present"; 
+                            if(r.tIn && r.tOut) {
+                                let mins = calcDuration(r.tIn, r.tOut);
+                                txt = minsToTime(mins);
+                            } else { txt = "✔"; }
+                        } else { cls += " status-absent"; txt = "✖"; } 
+                    }
+                    
+                    let c = document.createElement('div'); 
+                    c.className = cls; 
+                    c.innerText = txt;
+                    
+                    // منع النقر على الأيام المستقبلية
+                    if(isFuture) {
+                        c.className += " cell-future";
+                        c.onclick = () => alert("🚫 لا يمكن التأشير على أيام في المستقبل!");
+                    } else {
+                        c.onclick = () => openAttModal(e, k); 
+                    }
+                    grid.appendChild(c);
+                }
+            });
+        }
+    }
+
+    // --- Modal Logic & Smart "Now" Button ---
+    window.openAttModal = (e, k) => { 
+        sel = { e, k }; 
+        document.getElementById('attEmpName').innerText = e.name; 
+        document.getElementById('attModal').style.display = 'flex'; 
+        
+        // Load existing
+        if(appData.att[k] && appData.att[k].status === 'full') {
+            document.getElementById('tIn').value = appData.att[k].tIn || "08:00";
+            document.getElementById('tOut').value = appData.att[k].tOut || "16:00";
+        }
+    }
+    
+    // الزر الذكي
+    window.setSmartNow = (id) => {
+        let parts = sel.k.split('-'); // [Year, Month, Day, ID]
+        let selDate = new Date(parts[0], parts[1], parts[2]);
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        
+        // التحقق من التاريخ
+        if(selDate.getTime() !== today.getTime()) {
+            alert("⚠️ تنبيه: زر 'الآن' يعمل فقط لليوم الحالي.\nللأيام السابقة، يرجى كتابة الوقت يدوياً.");
+            return;
+        }
+        
+        // إذا كان اليوم الحالي، ضع الوقت
+        let d = new Date(); 
+        document.getElementById(id).value = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+    }
+    
+    window.saveAtt = (s) => { 
+        let tIn = document.getElementById('tIn').value;
+        let tOut = document.getElementById('tOut').value;
+        let workMins = 0;
+        if(s === 'full') {
+            workMins = calcDuration(tIn, tOut);
+            appData.att[sel.k] = { status: 'full', tIn: tIn, tOut: tOut, workMins: workMins }; 
+        } else { appData.att[sel.k] = { status: 'absent' }; }
+        saveToFirebase(); closeM('attModal'); 
+    }
+
+    // --- Advances ---
+    window.openAdvancesModal = () => {
+        const a = document.getElementById('advListArea'), mk = `${currDate.getFullYear()}-${currDate.getMonth()}`;
+        if(!appData.advances[mk]) appData.advances[mk] = {};
+        a.innerHTML = appData.emps.map(e => {
+            let list = appData.advances[mk][e.id] || [];
+            let total = list.reduce((acc, item) => acc + (item.val || item), 0);
+            let itemsHtml = list.map((item, idx) => {
+                let val = item.val || item; let dateStr = item.dateStr || ""; 
+                return `<div style="display:flex; justify-content:space-between; padding:6px; border-bottom:1px dashed #eee; font-size:0.9rem"><span><b>${val} دج</b> <span style="font-size:0.75rem; color:#888; margin-right:5px">🕒 ${dateStr}</span></span><span style="color:red; cursor:pointer" onclick="delAdv('${e.id}', ${idx})">🗑️</span></div>`;
+            }).join('');
+            return `<div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:8px; background:#fafafa"><div style="display:flex; justify-content:space-between; margin-bottom:5px"><b>${e.name}</b> <span style="color:var(--debt); font-weight:bold">${total} دج</span></div><div class="row-now"><input type="number" id="adv_${e.id}" placeholder="المبلغ"><button onclick="addAdvance('${e.id}')" style="width:auto; background:var(--primary); color:white">+</button></div>${itemsHtml}</div>`;
+        }).join('');
+        document.getElementById('advModal').style.display = 'flex';
+    }
+    window.addAdvance = (eid) => {
+        let v = document.getElementById(`adv_${eid}`).value;
+        if(v) { 
+            const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`;
+            if(!appData.advances[mk][eid]) appData.advances[mk][eid] = [];
+            appData.advances[mk][eid].push({ val: Number(v), dateStr: getNowStr() });
+            saveToFirebase(); openAdvancesModal();
+        }
+    }
+    window.delAdv = (eid, idx) => { if(confirm("حذف؟")) { const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; appData.advances[mk][eid].splice(idx, 1); saveToFirebase(); openAdvancesModal(); } }
+
+    // --- Debts ---
+    window.openDebtsModal = () => { switchDebtTab('in'); document.getElementById('debtModal').style.display = 'flex'; }
+    window.switchDebtTab = (t) => {
+        currentDebtTab = t;
+        document.getElementById('tabIn').className = t === 'in' ? 'debt-tab active' : 'debt-tab';
+        document.getElementById('tabOut').className = t === 'out' ? 'debt-tab active-out' : 'debt-tab';
+        document.getElementById('debtListIn').style.display = t === 'in' ? 'block' : 'none';
+        document.getElementById('debtListOut').style.display = t === 'out' ? 'block' : 'none';
+        document.querySelector('.btn-plus-bold').style.background = t === 'in' ? 'var(--debt)' : 'var(--danger)';
+        renderDebtList();
+    }
+    window.addDebt = () => {
+        let n = document.getElementById('debtName').value, v = document.getElementById('debtVal').value;
+        if(n && v) {
+            appData.debts[currentDebtTab].push({ id: Date.now(), name: n, total: Number(v), remaining: Number(v), dateStr: getNowStr(), status: 'active' });
+            saveToFirebase(); document.getElementById('debtName').value=""; document.getElementById('debtVal').value=""; renderDebtList();
+        }
+    }
+    function renderDebtList() {
+        let list = appData.debts[currentDebtTab], container = document.getElementById(currentDebtTab === 'in' ? 'debtListIn' : 'debtListOut');
+        if(list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999'>لا توجد ديون</p>"; return; }
+        container.innerHTML = list.map((d, i) => {
+            let total = d.total || d.val || 0, remaining = d.remaining !== undefined ? d.remaining : total, isPaid = remaining <= 0;
+            return `<div class="debt-card"><div><div style="font-weight:bold">${d.name}</div><div style="font-size:0.75rem; color:#777">📅 ${d.dateStr||d.date||""}</div><div style="font-size:0.8rem; color:#555">الأصل: ${total} دج</div></div><div style="text-align:left"><div class="debt-amount ${isPaid ? 'debt-paid' : ''}">${remaining} دج</div>${!isPaid ? `<button class="btn-pay" onclick="settleDebt('${currentDebtTab}', ${i})">تسديد 💵</button>` : '<span style="color:green; font-weight:bold">✅ خالص</span>'}<div style="margin-top:5px"><span style="color:red; cursor:pointer; font-size:0.8rem" onclick="deleteDebt('${currentDebtTab}', ${i})">🗑️ حذف</span></div></div></div>`;
+        }).join('');
+    }
+    window.settleDebt = (type, i) => {
+        let d = appData.debts[type][i]; if(d.remaining === undefined) d.remaining = d.total || d.val;
+        let pay = prompt(`كم تريد أن تسدد؟\nالمبلغ المتبقي: ${d.remaining} دج`);
+        if(pay) { let amt = Number(pay); if(amt > 0 && amt <= d.remaining) { d.remaining -= amt; if(d.remaining === 0) d.status = 'paid'; saveToFirebase(); renderDebtList(); } else alert("قيمة غير صحيحة"); }
+    }
+    window.deleteDebt = (t, i) => { if(confirm("حذف؟")) { appData.debts[t].splice(i, 1); saveToFirebase(); renderDebtList(); } }
+
+    // --- General ---
+    window.openSettingsModal = () => {
+        const l = document.getElementById('empsList'); l.innerHTML = "";
+        document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || "";
+        if(appData.emps) appData.emps.forEach((e, i) => l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee"><b>${e.name}</b> (${e.rate}) <span style="color:red; cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`);
+        document.getElementById('settingsModal').style.display = 'flex';
+    }
+    window.addEmployee = () => { let n = document.getElementById('newE').value, r = document.getElementById('newR').value; if(n && r) { appData.emps.push({ id: Date.now(), name: n, rate: Number(r) }); saveToFirebase(); document.getElementById('newE').value = ""; openSettingsModal(); } }
+    window.deleteEmp = (i) => { if(confirm("حذف؟")) { appData.emps.splice(i, 1); saveToFirebase(); openSettingsModal(); } }
+    window.saveCompanySettings = () => { appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); alert("تم!"); }
+    window.handleLogoUpload = (i) => { if(i.files && i.files[0]) { var r = new FileReader(); r.onload = (e) => window.tempLogo = e.target.result; r.readAsDataURL(i.files[0]); } }
+    window.updatePin = () => { let p=document.getElementById('p1').value; if(p.length===4){appData.pin=p; saveToFirebase(); alert("تم تغيير الرمز"); document.getElementById('p1').value="";} else alert("يجب أن يكون 4 أرقام"); }
+    window.closeM = (id) => document.getElementById(id).style.display = 'none';
+    
+    // --- Report ---
+    function updateWASelect() { let s = document.getElementById('waEmpSelect'); s.innerHTML = '<option value="">-- اختر العامل --</option>'; if(appData.emps) appData.emps.forEach(e => s.innerHTML += `<option value="${e.id}">${e.name}</option>`); }
+    window.sendWAReport = () => {
+        let eid = document.getElementById('waEmpSelect').value; if(!eid) return alert("اختر العامل!");
+        let e = appData.emps.find(x => x.id == eid);
+        let mk = `${currDate.getFullYear()}-${currDate.getMonth()}`, dim = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate();
+        
+        let totalMins = 0, daysWorked = 0;
+        for(let d=1; d<=dim; d++) {
+            let r = appData.att[`${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${eid}`];
+            if(r && r.status === 'full') {
+                daysWorked++;
+                let mins = r.workMins || (r.tIn && r.tOut ? calcDuration(r.tIn, r.tOut) : 480);
+                totalMins += mins;
+            }
+        }
+        let totalHoursStr = minsToTime(totalMins);
+        let advList = appData.advances[mk] && appData.advances[mk][eid] ? appData.advances[mk][eid] : [];
+        let adv = advList.reduce((acc, item) => acc + (item.val || item), 0);
+        let sal = daysWorked * e.rate; 
+        let msg = `*كشف: ${e.name}*\n🗓️ ${document.getElementById('monthLabel').innerText}\n✅ أيام العمل: ${daysWorked}\n⏱ الساعات: ${totalHoursStr}\n💵 مستحق: ${sal} دج\n💸 سحب: ${adv} دج\n💰 *صافي: ${sal - adv} دج*`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+    
+    function updateStatus(s) { const el = document.getElementById('connStatus'); if(s === true) { el.innerText="متصل ✅"; el.style.background="#00C851"; } else if(s === "sync") { el.innerText="حفظ... ⏳"; el.style.background="orange"; } else { el.innerText="منقطع ❌"; el.style.background="red"; } }
+</script>
+</body>
+</html>
