@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الرواتب (V4.3 Fixed PIN)</title>
+    <title>نظام الرواتب (V5.0 Pro)</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2563EB">
     <link rel="manifest" href="manifest.json">
 
@@ -85,23 +84,24 @@
         .debt-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .debt-tab.active-out { color: var(--danger); }
 
-        /* PIN Fix: FORCE LTR */
+        /* PIN Fix */
         .pin-container { display: flex; justify-content: center; gap: 15px; margin: 30px 0; }
         .pin-dot { width: 16px; height: 16px; border-radius: 50%; background: #E2E8F0; transition: 0.2s; }
         .pin-dot.active { background: var(--primary); transform: scale(1.2); }
-        
-        .pin-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 12px; 
-            direction: ltr !important; /* إجبار الاتجاه من اليسار لليمين */
-            margin-top: 15px; 
-        }
+        .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; direction: ltr !important; margin-top: 15px; }
 
         /* Loader */
         #loader { position: fixed; inset: 0; background: var(--surface); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 4px solid #E2E8F0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
     </style>
 </head>
 <body>
@@ -175,11 +175,8 @@
             <button onclick="pressPin('7')" class="btn btn-ghost" style="font-size:1.5rem">7</button>
             <button onclick="pressPin('8')" class="btn btn-ghost" style="font-size:1.5rem">8</button>
             <button onclick="pressPin('9')" class="btn btn-ghost" style="font-size:1.5rem">9</button>
-            
             <button onclick="clearPin()" class="btn btn-danger" style="font-size:1rem; background:#fee2e2; color:#ef4444;">C</button>
-            
             <button onclick="pressPin('0')" class="btn btn-ghost" style="font-size:1.5rem">0</button>
-            
             <button onclick="backspacePin()" class="btn btn-ghost" style="font-size:1.2rem; color:#f59e0b;">⌫</button>
         </div>
     </div>
@@ -230,18 +227,24 @@
             <input id="inputCompName" placeholder="الاسم بالعربية">
             <input id="inputCompNameFr" placeholder="الاسم بالفرنسية">
             <label style="font-size:0.8rem; margin-bottom:5px; display:block">الشعار:</label><input type="file" id="inputLogo" accept="image/*" onchange="handleLogoUpload(this)">
-            
-            <h4 style="margin:15px 0 10px 0; color:var(--text-sub)">🎨 حقوق المصمم (Footer)</h4>
-            <input id="inputDesigner" placeholder="اسم المصمم (يظهر في الأسفل)">
-            <input id="inputPhone" placeholder="رقم هاتف المصمم (للواتساب)">
-            
-            <button class="btn btn-primary btn-sm" onclick="saveCompanySettings()">حفظ الإعدادات</button>
+            <button class="btn btn-primary btn-sm" onclick="saveCompanySettings()">حفظ الهوية</button>
         </div>
+
         <h4 style="margin-bottom:10px">👥 الموظفين</h4>
         <div id="empsList" style="max-height:200px; overflow-y:auto; margin-bottom:15px"></div>
         <div style="display:flex; gap:10px; margin-bottom:10px"><input id="newE" placeholder="الاسم" style="margin:0"><input id="newR" type="number" placeholder="الأجر" style="width:80px; margin:0"></div>
         <button class="btn btn-success" onclick="addEmployee()">➕ إضافة موظف</button>
+        
         <hr style="border-top:1px solid var(--border); margin:20px 0">
+        
+        <div style="background:#fff; padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <span style="font-weight:700">🔐 تفعيل الرمز السري</span>
+            <label class="switch">
+                <input type="checkbox" id="pinToggle" onchange="togglePin(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
         <div style="display:flex; gap:10px"><input type="password" id="p1" maxlength="4" placeholder="تغيير الرمز (4 أرقام)" style="margin:0"><button class="btn btn-primary btn-sm" onclick="updatePin()">تحديث</button></div>
         <button class="btn btn-ghost" onclick="closeM('settingsModal')" style="margin-top:15px">إغلاق</button>
     </div>
@@ -250,8 +253,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
   authDomain: "pointage-af939.firebaseapp.com",
   projectId: "pointage-af939",
@@ -260,10 +262,11 @@
   appId: "1:265434883388:web:43b87f6671d4e446d7aa39",
   measurementId: "G-VEZH7GMRG2"
 };
+    // ⚠️⚠️⚠️ ------------------------------------------------------------- ⚠️⚠️⚠️
 
-    if (!firebaseConfig.apiKey) {
+    if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("ضع_كود")) {
         document.getElementById('errorMsg').style.display = 'block';
-        document.getElementById('errorMsg').innerText = "⚠️ خطأ: يرجى وضع كود Firebase!";
+        document.getElementById('errorMsg').innerText = "⚠️ خطأ: يجب وضع كود Firebase Config الخاص بك!";
         throw new Error("Missing Config");
     }
 
@@ -271,7 +274,7 @@
     const db = getFirestore(app);
     const mainDocRef = doc(db, "salary_system", "main_data");
 
-    let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000", designerName: "Ahmed Tech", designerPhone: "" };
+    let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000", pinEnabled: true, designerName: "Ahmed Tech", designerPhone: "" };
     let currDate = new Date();
     let sel = null;
     let pinIn = "";
@@ -301,10 +304,19 @@
         if (docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
+            if(appData.pinEnabled === undefined) appData.pinEnabled = true; // Default
+            
+            // Check PIN Status
+            if(appData.pinEnabled === false) {
+                 document.getElementById('pinModal').style.display = 'none';
+                 document.getElementById('contentArea').style.display = 'block';
+            }
+
             if(Array.isArray(appData.debts)) appData.debts = { in: appData.debts, out: [] };
             if(!appData.debts) appData.debts = { in: [], out: [] };
             applyIdentity(); renderCalendar(); updateWASelect();
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
+            if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); // Refresh list if open
         } else { saveToFirebase(); }
     }, (e) => { document.getElementById('loader').style.display = 'none'; updateStatus(false); alert("خطأ في الاتصال!"); });
 
@@ -319,9 +331,7 @@
         if(appData.logo) { document.getElementById('displayLogo').src = appData.logo; document.getElementById('displayLogo').style.display = 'block'; }
         
         document.getElementById('designerLink').innerText = appData.designerName || "Ahmed Tech";
-        window.contactDesigner = () => {
-            if(appData.designerPhone) window.open(`https://wa.me/${appData.designerPhone}`, '_blank');
-        };
+        window.contactDesigner = () => { if(appData.designerPhone) window.open(`https://wa.me/${appData.designerPhone}`, '_blank'); };
     }
 
     window.changeMonth = (n) => { currDate.setMonth(currDate.getMonth() + n); renderCalendar(); }
@@ -414,29 +424,54 @@
     window.openSettingsModal = () => {
         const l = document.getElementById('empsList'); l.innerHTML = "";
         document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || "";
-        document.getElementById('inputDesigner').value = appData.designerName || ""; document.getElementById('inputPhone').value = appData.designerPhone || "";
-        if(appData.emps) appData.emps.forEach((e, i) => l.innerHTML += `<div class="list-item"><span><b>${e.name}</b> (${e.rate})</span><span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`);
+        document.getElementById('pinToggle').checked = appData.pinEnabled !== false;
+        
+        if(appData.emps) appData.emps.forEach((e, i) => {
+            l.innerHTML += `<div class="list-item">
+                <span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️ تعديل</span></span>
+                <span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span>
+            </div>`;
+        });
         document.getElementById('settingsModal').style.display = 'flex';
     }
+    
+    window.updateEmpRate = (i) => {
+        let e = appData.emps[i];
+        let newRate = prompt(`تعديل الأجر اليومي للموظف: ${e.name}\nالأجر الحالي: ${e.rate} دج`, e.rate);
+        if(newRate && newRate > 0) {
+            appData.emps[i].rate = Number(newRate);
+            saveToFirebase();
+            openSettingsModal(); // Refresh UI
+        }
+    }
+
+    window.togglePin = (checkbox) => {
+        appData.pinEnabled = checkbox.checked;
+        saveToFirebase();
+        if(appData.pinEnabled === false) {
+            alert("تم تعطيل الرمز السري. سيتم الدخول للتطبيق مباشرة.");
+        } else {
+            alert("تم تفعيل الحماية. سيُطلب الرمز عند إعادة تشغيل التطبيق.");
+        }
+    }
+
     window.addEmployee = () => { let n = document.getElementById('newE').value, r = document.getElementById('newR').value; if(n && r) { appData.emps.push({ id: Date.now(), name: n, rate: Number(r) }); saveToFirebase(); document.getElementById('newE').value = ""; openSettingsModal(); } }
     window.deleteEmp = (i) => { if(confirm("حذف؟")) { appData.emps.splice(i, 1); saveToFirebase(); openSettingsModal(); } }
     window.saveCompanySettings = () => { 
         appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; 
-        appData.designerName = document.getElementById('inputDesigner').value; appData.designerPhone = document.getElementById('inputPhone').value;
-        if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); alert("تم!"); applyIdentity();
+        if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); alert("تم حفظ الهوية!"); applyIdentity();
     }
     window.handleLogoUpload = (i) => { if(i.files && i.files[0]) { var r = new FileReader(); r.onload = (e) => window.tempLogo = e.target.result; r.readAsDataURL(i.files[0]); } }
     
     window.updatePin = () => { 
         let p = document.getElementById('p1').value; 
         if(p.length === 4) {
-            appData.pin = p; 
+            appData.pin = p; appData.pinEnabled = true; // Auto enable when changing pin
             saveToFirebase(); 
-            alert("تم تغيير الرمز بنجاح! الرمز القديم لن يعمل بعد الآن."); 
+            alert("تم تحديث الرمز!"); 
             document.getElementById('p1').value="";
-        } else {
-            alert("يجب أن يكون الرمز 4 أرقام");
-        }
+            document.getElementById('pinToggle').checked = true;
+        } else { alert("يجب أن يكون الرمز 4 أرقام"); }
     }
 
     window.closeM = (id) => document.getElementById(id).style.display = 'none';
