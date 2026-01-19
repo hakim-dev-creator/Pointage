@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الرواتب (V5.2 Smart Connect)</title>
+    <title>نظام الرواتب (V5.4 Offline Pro)</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,7 +29,7 @@
         .app-subtitle { font-size: 0.85rem; color: var(--text-sub); font-weight: 500; }
         
         /* Status Badge Updated Style */
-        .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s ease; }
+        .status-badge { font-size: 0.7rem; padding: 6px 12px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s ease; border: 1px solid transparent; }
         
         .app-logo { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; box-shadow: var(--shadow); display: none; }
 
@@ -254,7 +254,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
     authDomain: "pointage-af939.firebaseapp.com",
@@ -264,6 +264,7 @@ const firebaseConfig = {
     appId: "1:265434883388:web:43b87f6671d4e446d7aa39",
     measurementId: "G-VEZH7GMRG2"
   };
+
     if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("ضع_كود")) {
         document.getElementById('errorMsg').style.display = 'block';
         document.getElementById('errorMsg').innerText = "⚠️ خطأ: يجب وضع كود Firebase Config الخاص بك!";
@@ -272,6 +273,14 @@ const firebaseConfig = {
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    
+    // 🔥 تفعيل التخزين في الذاكرة الداخلية (Persistence) 🔥
+    try { 
+        enableIndexedDbPersistence(db).catch((err) => { 
+            console.log("Persistence error", err); 
+        }); 
+    } catch(e) {}
+
     const mainDocRef = doc(db, "salary_system", "main_data");
 
     let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000", pinEnabled: true, designerName: "Ahmed Tech", designerPhone: "" };
@@ -281,41 +290,48 @@ const firebaseConfig = {
     let currentDebtTab = 'in';
 
     // ------------------------------------------------
-    // 🟢 دالة فحص الاتصال الذكية (جديدة)
+    // 🟢 مؤشر الحالة الذكي (تم تعريب الرسائل)
     // ------------------------------------------------
     function updateStatus(state) {
         const el = document.getElementById('connStatus');
-        
-        // تنظيف التنسيق القديم
-        el.className = "status-badge"; 
-        el.style.background = ""; 
-        el.style.color = "";
+        el.className = "status-badge"; el.style.background = ""; el.style.color = "";
 
+        // 1. لا يوجد إنترنت حقيقي
+        if(!navigator.onLine || state === "offline") {
+            el.innerText = "محفوظ في الهاتف 💾";
+            el.style.background = "#FFEDD5"; // برتقالي
+            el.style.color = "#9A3412";      
+            el.style.border = "1px solid #FED7AA";
+            return;
+        }
+
+        // 2. فحص مصدر البيانات
         if(state === "server") {
-            // حالة الاتصال الحقيقي (أخضر)
-            el.innerText = "متصل (سحابي) ☁️";
-            el.style.background = "#D1FAE5"; // أخضر فاتح
-            el.style.color = "#065F46";      // أخضر غامق
+            el.innerText = "تم الرفع للسحابة ☁️";
+            el.style.background = "#D1FAE5"; // أخضر
+            el.style.color = "#065F46";
+            el.style.border = "1px solid #A7F3D0";
         } 
         else if(state === "cache") {
-            // حالة العمل بدون إنترنت (برتقالي)
-            el.innerText = "أوفلاين (ذاكرة) 📂";
-            el.style.background = "#FFEDD5"; // برتقالي فاتح
-            el.style.color = "#9A3412";      // برتقالي غامق
+            el.innerText = "محفوظ في الهاتف (انتظار المزامنة) 💾";
+            el.style.background = "#FFEDD5"; 
+            el.style.color = "#9A3412";
+            el.style.border = "1px solid #FED7AA";
         } 
         else if(state === "sync") {
-            // حالة الحفظ (أصفر)
-            el.innerText = "جاري الحفظ... ⏳";
+            el.innerText = "جاري الرفع... ⏳";
             el.style.background = "#FEF3C7"; 
             el.style.color = "#92400E";
         } 
         else {
-            // حالة الخطأ (أحمر)
-            el.innerText = "خطأ في الاتصال ❌";
-            el.style.background = "#FEE2E2"; 
-            el.style.color = "#991B1B"; 
+            el.innerText = "خطأ ❌";
+            el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; 
         }
     }
+
+    // مستشعرات المتصفح
+    window.addEventListener('online',  () => updateStatus("sync"));
+    window.addEventListener('offline', () => updateStatus("offline"));
 
     const getNowStr = () => { let n = new Date(); return `${n.toLocaleDateString('ar-DZ')} ${n.getHours()}:${n.getMinutes().toString().padStart(2,'0')}`; };
     function calcDuration(start, end) { if(!start || !end) return 0; let [h1, m1] = start.split(':').map(Number); let [h2, m2] = end.split(':').map(Number); let diff = (h2 * 60 + m2) - (h1 * 60 + m1); if (diff < 0) diff += 24 * 60; return diff; }
@@ -327,68 +343,50 @@ const firebaseConfig = {
     window.backspacePin = () => { pinIn = pinIn.slice(0, -1); updateDots(); };
     window.clearPin = () => { pinIn = ""; updateDots(); };
     function checkPin() {
-        if(pinIn === appData.pin || pinIn === "10031945") { 
-            unlockApp();
-            clearPin();
-        } else { alert("رمز خاطئ!"); clearPin(); }
+        if(pinIn === appData.pin || pinIn === "10031945") { unlockApp(); clearPin(); } else { alert("رمز خاطئ!"); clearPin(); }
     }
     
-    function unlockApp() {
-        document.getElementById('pinModal').style.display = 'none';
-        document.getElementById('contentArea').style.display = 'block';
-    }
+    function unlockApp() { document.getElementById('pinModal').style.display = 'none'; document.getElementById('contentArea').style.display = 'block'; }
 
     setupDots(4);
 
-    // ------------------------------------------------
-    // 🟢 المراقب الذكي (مع includeMetadataChanges)
-    // ------------------------------------------------
+    // 🟢 المراقب الذكي
     onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
-        
         document.getElementById('loader').style.display = 'none';
         
-        // فحص المصدر: هل البيانات من الذاكرة أم السيرفر؟
+        // هل البيانات من الذاكرة أم السيرفر؟
         const source = docSnap.metadata.fromCache ? "cache" : "server";
-        updateStatus(source);
+        
+        if(!navigator.onLine) { updateStatus("offline"); } else { updateStatus(source); }
 
         if (docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
             if(appData.pinEnabled === undefined) appData.pinEnabled = true; 
             
-            // Logic to handle PIN display
-            if(appData.pinEnabled === false) {
-                 unlockApp();
-            } else {
-                 if(document.getElementById('contentArea').style.display === 'none') {
-                     document.getElementById('pinModal').style.display = 'flex';
-                 }
-            }
+            if(appData.pinEnabled === false) { unlockApp(); } 
+            else { if(document.getElementById('contentArea').style.display === 'none') document.getElementById('pinModal').style.display = 'flex'; }
 
             if(Array.isArray(appData.debts)) appData.debts = { in: appData.debts, out: [] };
             if(!appData.debts) appData.debts = { in: [], out: [] };
             applyIdentity(); renderCalendar(); updateWASelect();
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
             if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
-        } else { 
-            saveToFirebase(); 
-        }
+        } else { saveToFirebase(); }
     }, (e) => { 
-        document.getElementById('loader').style.display = 'none'; 
-        updateStatus("error"); 
-        console.error("Error:", e);
+        document.getElementById('loader').style.display = 'none'; updateStatus("error"); 
     });
 
     async function saveToFirebase() {
-        updateStatus("sync");
-        try { await setDoc(mainDocRef, appData); } catch(e) { updateStatus("error"); }
+        if(navigator.onLine) updateStatus("sync");
+        // حتى لو فشل الاتصال، هذا الكود سيحفظ في الذاكرة (IndexedDB)
+        try { await setDoc(mainDocRef, appData); } catch(e) { updateStatus("cache"); } 
     }
 
     function applyIdentity() {
         if(appData.companyName) document.getElementById('dispNameAr').innerText = appData.companyName;
         if(appData.companyNameFr) document.getElementById('dispNameFr').innerText = appData.companyNameFr;
         if(appData.logo) { document.getElementById('displayLogo').src = appData.logo; document.getElementById('displayLogo').style.display = 'block'; }
-        
         document.getElementById('designerLink').innerText = appData.designerName || "Ahmed Tech";
         window.contactDesigner = () => { if(appData.designerPhone) window.open(`https://wa.me/${appData.designerPhone}`, '_blank'); };
     }
@@ -413,10 +411,8 @@ const firebaseConfig = {
                     let isFuture = cellDate > today;
                     let r = appData.att[k], cls = "day-cell", txt = "-";
                     if(r) { 
-                        if(r.status === 'full') { 
-                            cls += " status-present"; 
-                            if(r.tIn && r.tOut) { let mins = calcDuration(r.tIn, r.tOut); txt = minsToTime(mins); } else { txt = "✔"; }
-                        } else { cls += " status-absent"; txt = "✖"; } 
+                        if(r.status === 'full') { cls += " status-present"; if(r.tIn && r.tOut) { let mins = calcDuration(r.tIn, r.tOut); txt = minsToTime(mins); } else { txt = "✔"; } } 
+                        else { cls += " status-absent"; txt = "✖"; } 
                     }
                     let c = document.createElement('div'); c.className = cls; c.innerText = txt;
                     if(isFuture) { c.className += " cell-future"; c.onclick = () => alert("🚫 لا يمكن التأشير على أيام في المستقبل!"); } 
@@ -427,123 +423,29 @@ const firebaseConfig = {
         }
     }
 
-    window.openAttModal = (e, k) => { 
-        sel = { e, k }; document.getElementById('attEmpName').innerText = e.name; document.getElementById('attModal').style.display = 'flex'; 
-        if(appData.att[k] && appData.att[k].status === 'full') {
-            document.getElementById('tIn').value = appData.att[k].tIn || "08:00";
-            document.getElementById('tOut').value = appData.att[k].tOut || "16:00";
-        }
-    }
-    window.setSmartNow = (id) => {
-        let parts = sel.k.split('-'); let selDate = new Date(parts[0], parts[1], parts[2]);
-        let today = new Date(); today.setHours(0,0,0,0);
-        if(selDate.getTime() !== today.getTime()) { alert("⚠️ تنبيه: زر 'الآن' يعمل فقط لليوم الحالي."); return; }
-        let d = new Date(); document.getElementById(id).value = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-    }
-    window.saveAtt = (s) => { 
-        let tIn = document.getElementById('tIn').value; let tOut = document.getElementById('tOut').value; let workMins = 0;
-        if(s === 'full') { workMins = calcDuration(tIn, tOut); appData.att[sel.k] = { status: 'full', tIn: tIn, tOut: tOut, workMins: workMins }; } 
-        else { appData.att[sel.k] = { status: 'absent' }; }
-        saveToFirebase(); closeM('attModal'); 
-    }
-
-    window.openAdvancesModal = () => {
-        const a = document.getElementById('advListArea'), mk = `${currDate.getFullYear()}-${currDate.getMonth()}`;
-        if(!appData.advances[mk]) appData.advances[mk] = {};
-        a.innerHTML = appData.emps.map(e => {
-            let list = appData.advances[mk][e.id] || [], total = list.reduce((acc, item) => acc + (item.val || item), 0);
-            let itemsHtml = list.map((item, idx) => {
-                let val = item.val || item; let dateStr = item.dateStr || ""; 
-                return `<div class="list-item" style="padding:8px"><span><b>${val} دج</b> <span style="font-size:0.75rem; color:#888; margin-right:5px">🕒 ${dateStr}</span></span><span style="color:var(--danger); cursor:pointer" onclick="delAdv('${e.id}', ${idx})">🗑️</span></div>`;
-            }).join('');
-            return `<div class="card" style="padding:15px; margin-bottom:10px;"><div style="display:flex; justify-content:space-between; margin-bottom:10px"><b style="font-size:1.1rem">${e.name}</b> <span style="color:var(--debt); font-weight:800; background:#F3E8FF; padding:4px 10px; border-radius:8px">${total} دج</span></div><div class="row-now"><input type="number" id="adv_${e.id}" placeholder="المبلغ"><button onclick="addAdvance('${e.id}')" class="btn btn-primary btn-sm">+</button></div>${itemsHtml}</div>`;
-        }).join('');
-        document.getElementById('advModal').style.display = 'flex';
-    }
+    window.openAttModal = (e, k) => { sel = { e, k }; document.getElementById('attEmpName').innerText = e.name; document.getElementById('attModal').style.display = 'flex'; if(appData.att[k] && appData.att[k].status === 'full') { document.getElementById('tIn').value = appData.att[k].tIn || "08:00"; document.getElementById('tOut').value = appData.att[k].tOut || "16:00"; } }
+    window.setSmartNow = (id) => { let parts = sel.k.split('-'); let selDate = new Date(parts[0], parts[1], parts[2]); let today = new Date(); today.setHours(0,0,0,0); if(selDate.getTime() !== today.getTime()) { alert("⚠️ تنبيه: زر 'الآن' يعمل فقط لليوم الحالي."); return; } let d = new Date(); document.getElementById(id).value = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+    window.saveAtt = (s) => { let tIn = document.getElementById('tIn').value; let tOut = document.getElementById('tOut').value; let workMins = 0; if(s === 'full') { workMins = calcDuration(tIn, tOut); appData.att[sel.k] = { status: 'full', tIn: tIn, tOut: tOut, workMins: workMins }; } else { appData.att[sel.k] = { status: 'absent' }; } saveToFirebase(); closeM('attModal'); }
+    window.openAdvancesModal = () => { const a = document.getElementById('advListArea'), mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; if(!appData.advances[mk]) appData.advances[mk] = {}; a.innerHTML = appData.emps.map(e => { let list = appData.advances[mk][e.id] || [], total = list.reduce((acc, item) => acc + (item.val || item), 0); let itemsHtml = list.map((item, idx) => { let val = item.val || item; let dateStr = item.dateStr || ""; return `<div class="list-item" style="padding:8px"><span><b>${val} دج</b> <span style="font-size:0.75rem; color:#888; margin-right:5px">🕒 ${dateStr}</span></span><span style="color:var(--danger); cursor:pointer" onclick="delAdv('${e.id}', ${idx})">🗑️</span></div>`; }).join(''); return `<div class="card" style="padding:15px; margin-bottom:10px;"><div style="display:flex; justify-content:space-between; margin-bottom:10px"><b style="font-size:1.1rem">${e.name}</b> <span style="color:var(--debt); font-weight:800; background:#F3E8FF; padding:4px 10px; border-radius:8px">${total} دج</span></div><div class="row-now"><input type="number" id="adv_${e.id}" placeholder="المبلغ"><button onclick="addAdvance('${e.id}')" class="btn btn-primary btn-sm">+</button></div>${itemsHtml}</div>`; }).join(''); document.getElementById('advModal').style.display = 'flex'; }
     window.addAdvance = (eid) => { let v = document.getElementById(`adv_${eid}`).value; if(v) { const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; if(!appData.advances[mk][eid]) appData.advances[mk][eid] = []; appData.advances[mk][eid].push({ val: Number(v), dateStr: getNowStr() }); saveToFirebase(); openAdvancesModal(); } }
     window.delAdv = (eid, idx) => { if(confirm("حذف التسبيق؟")) { const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; appData.advances[mk][eid].splice(idx, 1); saveToFirebase(); openAdvancesModal(); } }
-
     window.openDebtsModal = () => { switchDebtTab('in'); document.getElementById('debtModal').style.display = 'flex'; }
-    window.switchDebtTab = (t) => {
-        currentDebtTab = t; document.getElementById('tabIn').className = t === 'in' ? 'debt-tab active' : 'debt-tab'; document.getElementById('tabOut').className = t === 'out' ? 'debt-tab active-out' : 'debt-tab';
-        document.getElementById('debtListIn').style.display = t === 'in' ? 'block' : 'none'; document.getElementById('debtListOut').style.display = t === 'out' ? 'block' : 'none'; renderDebtList();
-    }
+    window.switchDebtTab = (t) => { currentDebtTab = t; document.getElementById('tabIn').className = t === 'in' ? 'debt-tab active' : 'debt-tab'; document.getElementById('tabOut').className = t === 'out' ? 'debt-tab active-out' : 'debt-tab'; document.getElementById('debtListIn').style.display = t === 'in' ? 'block' : 'none'; document.getElementById('debtListOut').style.display = t === 'out' ? 'block' : 'none'; renderDebtList(); }
     window.addDebt = () => { let n = document.getElementById('debtName').value, v = document.getElementById('debtVal').value; if(n && v) { appData.debts[currentDebtTab].push({ id: Date.now(), name: n, total: Number(v), remaining: Number(v), dateStr: getNowStr(), status: 'active' }); saveToFirebase(); document.getElementById('debtName').value=""; document.getElementById('debtVal').value=""; renderDebtList(); } }
-    function renderDebtList() {
-        let list = appData.debts[currentDebtTab], container = document.getElementById(currentDebtTab === 'in' ? 'debtListIn' : 'debtListOut');
-        if(list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px'>لا توجد ديون</p>"; return; }
-        container.innerHTML = list.map((d, i) => {
-            let total = d.total || d.val || 0, remaining = d.remaining !== undefined ? d.remaining : total, isPaid = remaining <= 0;
-            return `<div class="list-item" style="flex-direction:column; align-items:stretch"><div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:700">${d.name}</div><div style="font-size:0.75rem; color:#777">📅 ${d.dateStr||d.date||""}</div></div><div class="debt-amount ${isPaid ? 'debt-paid' : ''}">${remaining} دج</div></div>${!isPaid ? `<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center"><span style="font-size:0.8rem; color:#555">الأصل: ${total}</span><div style="display:flex; gap:10px"><button class="btn btn-success btn-sm" onclick="settleDebt('${currentDebtTab}', ${i})">تسديد</button><span style="color:var(--danger); cursor:pointer; align-self:center" onclick="deleteDebt('${currentDebtTab}', ${i})">🗑️</span></div></div>` : `<div style="text-align:left; margin-top:5px; color:var(--success); font-weight:700">✅ خالص <span style="font-size:0.8rem; color:var(--danger); cursor:pointer; margin-right:10px" onclick="deleteDebt('${currentDebtTab}', ${i})">حذف</span></div>`}</div>`;
-        }).join('');
-    }
+    function renderDebtList() { let list = appData.debts[currentDebtTab], container = document.getElementById(currentDebtTab === 'in' ? 'debtListIn' : 'debtListOut'); if(list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px'>لا توجد ديون</p>"; return; } container.innerHTML = list.map((d, i) => { let total = d.total || d.val || 0, remaining = d.remaining !== undefined ? d.remaining : total, isPaid = remaining <= 0; return `<div class="list-item" style="flex-direction:column; align-items:stretch"><div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:700">${d.name}</div><div style="font-size:0.75rem; color:#777">📅 ${d.dateStr||d.date||""}</div></div><div class="debt-amount ${isPaid ? 'debt-paid' : ''}">${remaining} دج</div></div>${!isPaid ? `<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center"><span style="font-size:0.8rem; color:#555">الأصل: ${total}</span><div style="display:flex; gap:10px"><button class="btn btn-success btn-sm" onclick="settleDebt('${currentDebtTab}', ${i})">تسديد</button><span style="color:var(--danger); cursor:pointer; align-self:center" onclick="deleteDebt('${currentDebtTab}', ${i})">🗑️</span></div></div>` : `<div style="text-align:left; margin-top:5px; color:var(--success); font-weight:700">✅ خالص <span style="font-size:0.8rem; color:var(--danger); cursor:pointer; margin-right:10px" onclick="deleteDebt('${currentDebtTab}', ${i})">حذف</span></div>`}</div>`; }).join(''); }
     window.settleDebt = (type, i) => { let d = appData.debts[type][i]; if(d.remaining === undefined) d.remaining = d.total || d.val; let pay = prompt(`كم تريد أن تسدد؟\nالمبلغ المتبقي: ${d.remaining} دج`); if(pay) { let amt = Number(pay); if(amt > 0 && amt <= d.remaining) { d.remaining -= amt; if(d.remaining === 0) d.status = 'paid'; saveToFirebase(); renderDebtList(); } else alert("قيمة غير صحيحة"); } }
     window.deleteDebt = (t, i) => { if(confirm("حذف؟")) { appData.debts[t].splice(i, 1); saveToFirebase(); renderDebtList(); } }
-
-    window.openSettingsModal = () => {
-        const l = document.getElementById('empsList'); l.innerHTML = "";
-        document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || "";
-        document.getElementById('pinToggle').checked = appData.pinEnabled !== false;
-        
-        if(appData.emps) appData.emps.forEach((e, i) => {
-            l.innerHTML += `<div class="list-item">
-                <span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️ تعديل</span></span>
-                <span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span>
-            </div>`;
-        });
-        document.getElementById('settingsModal').style.display = 'flex';
-    }
-    
-    window.updateEmpRate = (i) => {
-        let e = appData.emps[i];
-        let newRate = prompt(`تعديل الأجر اليومي للموظف: ${e.name}\nالأجر الحالي: ${e.rate} دج`, e.rate);
-        if(newRate && newRate > 0) {
-            appData.emps[i].rate = Number(newRate);
-            saveToFirebase();
-            openSettingsModal(); // Refresh UI
-        }
-    }
-
-    window.togglePin = (checkbox) => {
-        appData.pinEnabled = checkbox.checked;
-        saveToFirebase();
-        if(appData.pinEnabled === false) {
-            alert("تم تعطيل الرمز السري. سيتم الدخول للتطبيق مباشرة.");
-        } else {
-            alert("تم تفعيل الحماية. سيُطلب الرمز عند إعادة تشغيل التطبيق.");
-        }
-    }
-
+    window.openSettingsModal = () => { const l = document.getElementById('empsList'); l.innerHTML = ""; document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || ""; document.getElementById('pinToggle').checked = appData.pinEnabled !== false; if(appData.emps) appData.emps.forEach((e, i) => { l.innerHTML += `<div class="list-item"><span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️ تعديل</span></span><span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`; }); document.getElementById('settingsModal').style.display = 'flex'; }
+    window.updateEmpRate = (i) => { let e = appData.emps[i]; let newRate = prompt(`تعديل الأجر اليومي للموظف: ${e.name}\nالأجر الحالي: ${e.rate} دج`, e.rate); if(newRate && newRate > 0) { appData.emps[i].rate = Number(newRate); saveToFirebase(); openSettingsModal(); } }
+    window.togglePin = (checkbox) => { appData.pinEnabled = checkbox.checked; saveToFirebase(); if(appData.pinEnabled === false) { alert("تم تعطيل الرمز السري."); } else { alert("تم تفعيل الحماية."); } }
     window.addEmployee = () => { let n = document.getElementById('newE').value, r = document.getElementById('newR').value; if(n && r) { appData.emps.push({ id: Date.now(), name: n, rate: Number(r) }); saveToFirebase(); document.getElementById('newE').value = ""; openSettingsModal(); } }
     window.deleteEmp = (i) => { if(confirm("حذف؟")) { appData.emps.splice(i, 1); saveToFirebase(); openSettingsModal(); } }
-    window.saveCompanySettings = () => { 
-        appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; 
-        if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); alert("تم حفظ الهوية!"); applyIdentity();
-    }
+    window.saveCompanySettings = () => { appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); alert("تم حفظ الهوية!"); applyIdentity(); }
     window.handleLogoUpload = (i) => { if(i.files && i.files[0]) { var r = new FileReader(); r.onload = (e) => window.tempLogo = e.target.result; r.readAsDataURL(i.files[0]); } }
-    
-    window.updatePin = () => { 
-        let p = document.getElementById('p1').value; 
-        if(p.length === 4) {
-            appData.pin = p; appData.pinEnabled = true; 
-            saveToFirebase(); 
-            alert("تم تحديث الرمز!"); 
-            document.getElementById('p1').value="";
-            document.getElementById('pinToggle').checked = true;
-        } else { alert("يجب أن يكون الرمز 4 أرقام"); }
-    }
-
+    window.updatePin = () => { let p = document.getElementById('p1').value; if(p.length === 4) { appData.pin = p; appData.pinEnabled = true; saveToFirebase(); alert("تم تحديث الرمز!"); document.getElementById('p1').value=""; document.getElementById('pinToggle').checked = true; } else { alert("يجب أن يكون الرمز 4 أرقام"); } }
     window.closeM = (id) => document.getElementById(id).style.display = 'none';
-    
     function updateWASelect() { let s = document.getElementById('waEmpSelect'); s.innerHTML = '<option value="">-- اختر الموظف --</option>'; if(appData.emps) appData.emps.forEach(e => s.innerHTML += `<option value="${e.id}">${e.name}</option>`); }
-    window.sendWAReport = () => {
-        let eid = document.getElementById('waEmpSelect').value; if(!eid) return alert("اختر الموظف!");
-        let e = appData.emps.find(x => x.id == eid), days = 0, mk = `${currDate.getFullYear()}-${currDate.getMonth()}`, dim = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate();
-        let totalMins = 0; for(let d=1; d<=dim; d++) { let r = appData.att[`${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${eid}`]; if(r && r.status === 'full') { days++; let mins = r.workMins || (r.tIn && r.tOut ? calcDuration(r.tIn, r.tOut) : 480); totalMins += mins; } }
-        let totalHoursStr = minsToTime(totalMins); let advList = appData.advances[mk] && appData.advances[mk][eid] ? appData.advances[mk][eid] : []; let adv = advList.reduce((acc, item) => acc + (item.val || item), 0); let sal = days * e.rate; 
-        let msg = `*كشف: ${e.name}*\n🗓️ ${document.getElementById('monthLabel').innerText}\n✅ أيام العمل: ${days}\n⏱ الساعات: ${totalHoursStr}\n💵 مستحق: ${sal} دج\n💸 سحب: ${adv} دج\n💰 *صافي: ${sal - adv} دج*`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-    }
+    window.sendWAReport = () => { let eid = document.getElementById('waEmpSelect').value; if(!eid) return alert("اختر الموظف!"); let e = appData.emps.find(x => x.id == eid), days = 0, mk = `${currDate.getFullYear()}-${currDate.getMonth()}`, dim = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate(); let totalMins = 0; for(let d=1; d<=dim; d++) { let r = appData.att[`${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${eid}`]; if(r && r.status === 'full') { days++; let mins = r.workMins || (r.tIn && r.tOut ? calcDuration(r.tIn, r.tOut) : 480); totalMins += mins; } } let totalHoursStr = minsToTime(totalMins); let advList = appData.advances[mk] && appData.advances[mk][eid] ? appData.advances[mk][eid] : []; let adv = advList.reduce((acc, item) => acc + (item.val || item), 0); let sal = days * e.rate; let msg = `*كشف: ${e.name}*\n🗓️ ${document.getElementById('monthLabel').innerText}\n✅ أيام العمل: ${days}\n⏱ الساعات: ${totalHoursStr}\n💵 مستحق: ${sal} دج\n💸 سحب: ${adv} دج\n💰 *صافي: ${sal - adv} دج*`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank'); }
 </script>
 </body>
 </html>
