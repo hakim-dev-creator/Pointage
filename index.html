@@ -255,18 +255,15 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // ⚠️⚠️⚠️ هام جداً: استبدل الكود أدناه ببياناتك الحقيقية من Firebase ⚠️⚠️⚠️
-    const firebaseConfig = {
-      apiKey: "ضع_كود_API_الخاص_بك_هنا",
-      authDomain: "ضع_رابط_المشروع_هنا",
-      projectId: "ضع_معرف_المشروع_هنا",
-      storageBucket: "...",
-      messagingSenderId: "...",
-      appId: "..."
-    };
-    // ⚠️⚠️⚠️ ------------------------------------------------------------- ⚠️⚠️⚠️
-
+const firebaseConfig = {
+    apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
+    authDomain: "pointage-af939.firebaseapp.com",
+    projectId: "pointage-af939",
+    storageBucket: "pointage-af939.firebasestorage.app",
+    messagingSenderId: "265434883388",
+    appId: "1:265434883388:web:43b87f6671d4e446d7aa39",
+    measurementId: "G-VEZH7GMRG2"
+  };
     if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("ضع_كود")) {
         document.getElementById('errorMsg').style.display = 'block';
         document.getElementById('errorMsg').innerText = "⚠️ خطأ: يجب وضع كود Firebase Config الخاص بك!";
