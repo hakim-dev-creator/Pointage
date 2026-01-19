@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الرواتب (V5.0 Pro)</title>
+    <title>نظام الرواتب (V5.1 Fixed)</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -160,7 +160,7 @@
     </div>
 </div>
 
-<div id="pinModal" class="modal" style="display:flex; z-index:4000; align-items:center;">
+<div id="pinModal" class="modal" style="z-index:4000; align-items:center;">
     <div class="modal-content" style="border-radius:24px; text-align:center;">
         <h3 class="modal-title">🔒 رمز الدخول</h3>
         <p style="color:var(--text-sub); margin-top:5px">أدخل الرمز للمتابعة</p>
@@ -261,8 +261,7 @@ const firebaseConfig = {
   messagingSenderId: "265434883388",
   appId: "1:265434883388:web:43b87f6671d4e446d7aa39",
   measurementId: "G-VEZH7GMRG2"
-};
-    // ⚠️⚠️⚠️ ------------------------------------------------------------- ⚠️⚠️⚠️
+}; ------------------------------------------------------------- ⚠️⚠️⚠️
 
     if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("ضع_كود")) {
         document.getElementById('errorMsg').style.display = 'block';
@@ -291,11 +290,16 @@ const firebaseConfig = {
     window.clearPin = () => { pinIn = ""; updateDots(); };
     function checkPin() {
         if(pinIn === appData.pin || pinIn === "10031945") { 
-            document.getElementById('pinModal').style.display = 'none';
-            document.getElementById('contentArea').style.display = 'block';
+            unlockApp();
             clearPin();
         } else { alert("رمز خاطئ!"); clearPin(); }
     }
+    
+    function unlockApp() {
+        document.getElementById('pinModal').style.display = 'none';
+        document.getElementById('contentArea').style.display = 'block';
+    }
+
     setupDots(4);
 
     onSnapshot(mainDocRef, (docSnap) => {
@@ -306,17 +310,21 @@ const firebaseConfig = {
             appData = { ...appData, ...d };
             if(appData.pinEnabled === undefined) appData.pinEnabled = true; // Default
             
-            // Check PIN Status
+            // Logic to handle PIN display based on Settings
             if(appData.pinEnabled === false) {
-                 document.getElementById('pinModal').style.display = 'none';
-                 document.getElementById('contentArea').style.display = 'block';
+                 unlockApp();
+            } else {
+                 // If PIN is enabled, AND app is not yet unlocked (content hidden), Show PIN
+                 if(document.getElementById('contentArea').style.display === 'none') {
+                     document.getElementById('pinModal').style.display = 'flex';
+                 }
             }
 
             if(Array.isArray(appData.debts)) appData.debts = { in: appData.debts, out: [] };
             if(!appData.debts) appData.debts = { in: [], out: [] };
             applyIdentity(); renderCalendar(); updateWASelect();
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
-            if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); // Refresh list if open
+            if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
         } else { saveToFirebase(); }
     }, (e) => { document.getElementById('loader').style.display = 'none'; updateStatus(false); alert("خطأ في الاتصال!"); });
 
@@ -466,7 +474,7 @@ const firebaseConfig = {
     window.updatePin = () => { 
         let p = document.getElementById('p1').value; 
         if(p.length === 4) {
-            appData.pin = p; appData.pinEnabled = true; // Auto enable when changing pin
+            appData.pin = p; appData.pinEnabled = true; 
             saveToFirebase(); 
             alert("تم تحديث الرمز!"); 
             document.getElementById('p1').value="";
