@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الرواتب (V5.1 Fixed)</title>
+    <title>نظام الرواتب (V5.2 Smart Connect)</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,8 +27,10 @@
         .header-content { display: flex; justify-content: space-between; align-items: center; }
         .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 0; line-height: 1.2; }
         .app-subtitle { font-size: 0.85rem; color: var(--text-sub); font-weight: 500; }
-        .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; background: #E2E8F0; color: var(--text-sub); font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
-        .status-badge.connected { background: #D1FAE5; color: #065F46; }
+        
+        /* Status Badge Updated Style */
+        .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s ease; }
+        
         .app-logo { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; box-shadow: var(--shadow); display: none; }
 
         /* Layout */
@@ -108,7 +110,7 @@
 
 <div id="loader">
     <div class="spinner"></div>
-    <p style="margin-top:20px; font-weight:700; color:var(--text-sub)">جاري تحميل النظام...</p>
+    <p style="margin-top:20px; font-weight:700; color:var(--text-sub)">جاري الاتصال بقاعدة البيانات...</p>
     <div id="errorMsg" style="color:var(--danger); display:none"></div>
 </div>
 
@@ -117,11 +119,11 @@
         <div class="header-content">
             <div>
                 <h1 id="dispNameAr" class="app-title">نظام الرواتب</h1>
-                <div id="dispNameFr" class="app-subtitle">Modern HR System</div>
+                <div id="dispNameFr" class="app-subtitle">Online System</div>
             </div>
             <div style="text-align: left;">
                 <img id="displayLogo" class="app-logo" src="" alt="Logo">
-                <div id="connStatus" class="status-badge">جاري الاتصال...</div>
+                <div id="connStatus" class="status-badge" style="background:#E2E8F0; color:#64748B;">جاري التحقق...</div>
             </div>
         </div>
     </div>
@@ -253,15 +255,18 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
-  authDomain: "pointage-af939.firebaseapp.com",
-  projectId: "pointage-af939",
-  storageBucket: "pointage-af939.firebasestorage.app",
-  messagingSenderId: "265434883388",
-  appId: "1:265434883388:web:43b87f6671d4e446d7aa39",
-  measurementId: "G-VEZH7GMRG2"
-};
+
+    // ⚠️⚠️⚠️ هام جداً: استبدل الكود أدناه ببياناتك الحقيقية من Firebase ⚠️⚠️⚠️
+    const firebaseConfig = {
+      apiKey: "ضع_كود_API_الخاص_بك_هنا",
+      authDomain: "ضع_رابط_المشروع_هنا",
+      projectId: "ضع_معرف_المشروع_هنا",
+      storageBucket: "...",
+      messagingSenderId: "...",
+      appId: "..."
+    };
+    // ⚠️⚠️⚠️ ------------------------------------------------------------- ⚠️⚠️⚠️
+
     if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("ضع_كود")) {
         document.getElementById('errorMsg').style.display = 'block';
         document.getElementById('errorMsg').innerText = "⚠️ خطأ: يجب وضع كود Firebase Config الخاص بك!";
@@ -277,6 +282,43 @@ const firebaseConfig = {
     let sel = null;
     let pinIn = "";
     let currentDebtTab = 'in';
+
+    // ------------------------------------------------
+    // 🟢 دالة فحص الاتصال الذكية (جديدة)
+    // ------------------------------------------------
+    function updateStatus(state) {
+        const el = document.getElementById('connStatus');
+        
+        // تنظيف التنسيق القديم
+        el.className = "status-badge"; 
+        el.style.background = ""; 
+        el.style.color = "";
+
+        if(state === "server") {
+            // حالة الاتصال الحقيقي (أخضر)
+            el.innerText = "متصل (سحابي) ☁️";
+            el.style.background = "#D1FAE5"; // أخضر فاتح
+            el.style.color = "#065F46";      // أخضر غامق
+        } 
+        else if(state === "cache") {
+            // حالة العمل بدون إنترنت (برتقالي)
+            el.innerText = "أوفلاين (ذاكرة) 📂";
+            el.style.background = "#FFEDD5"; // برتقالي فاتح
+            el.style.color = "#9A3412";      // برتقالي غامق
+        } 
+        else if(state === "sync") {
+            // حالة الحفظ (أصفر)
+            el.innerText = "جاري الحفظ... ⏳";
+            el.style.background = "#FEF3C7"; 
+            el.style.color = "#92400E";
+        } 
+        else {
+            // حالة الخطأ (أحمر)
+            el.innerText = "خطأ في الاتصال ❌";
+            el.style.background = "#FEE2E2"; 
+            el.style.color = "#991B1B"; 
+        }
+    }
 
     const getNowStr = () => { let n = new Date(); return `${n.toLocaleDateString('ar-DZ')} ${n.getHours()}:${n.getMinutes().toString().padStart(2,'0')}`; };
     function calcDuration(start, end) { if(!start || !end) return 0; let [h1, m1] = start.split(':').map(Number); let [h2, m2] = end.split(':').map(Number); let diff = (h2 * 60 + m2) - (h1 * 60 + m1); if (diff < 0) diff += 24 * 60; return diff; }
@@ -301,19 +343,26 @@ const firebaseConfig = {
 
     setupDots(4);
 
-    onSnapshot(mainDocRef, (docSnap) => {
+    // ------------------------------------------------
+    // 🟢 المراقب الذكي (مع includeMetadataChanges)
+    // ------------------------------------------------
+    onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
+        
         document.getElementById('loader').style.display = 'none';
-        updateStatus(true);
+        
+        // فحص المصدر: هل البيانات من الذاكرة أم السيرفر؟
+        const source = docSnap.metadata.fromCache ? "cache" : "server";
+        updateStatus(source);
+
         if (docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
-            if(appData.pinEnabled === undefined) appData.pinEnabled = true; // Default
+            if(appData.pinEnabled === undefined) appData.pinEnabled = true; 
             
-            // Logic to handle PIN display based on Settings
+            // Logic to handle PIN display
             if(appData.pinEnabled === false) {
                  unlockApp();
             } else {
-                 // If PIN is enabled, AND app is not yet unlocked (content hidden), Show PIN
                  if(document.getElementById('contentArea').style.display === 'none') {
                      document.getElementById('pinModal').style.display = 'flex';
                  }
@@ -324,12 +373,18 @@ const firebaseConfig = {
             applyIdentity(); renderCalendar(); updateWASelect();
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
             if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
-        } else { saveToFirebase(); }
-    }, (e) => { document.getElementById('loader').style.display = 'none'; updateStatus(false); alert("خطأ في الاتصال!"); });
+        } else { 
+            saveToFirebase(); 
+        }
+    }, (e) => { 
+        document.getElementById('loader').style.display = 'none'; 
+        updateStatus("error"); 
+        console.error("Error:", e);
+    });
 
     async function saveToFirebase() {
         updateStatus("sync");
-        try { await setDoc(mainDocRef, appData); updateStatus(true); } catch(e) { updateStatus(false); }
+        try { await setDoc(mainDocRef, appData); } catch(e) { updateStatus("error"); }
     }
 
     function applyIdentity() {
@@ -482,7 +537,7 @@ const firebaseConfig = {
     }
 
     window.closeM = (id) => document.getElementById(id).style.display = 'none';
-    function updateStatus(s) { const el = document.getElementById('connStatus'); if(s === true) { el.innerText="متصل ✅"; el.className="status-badge connected"; } else if(s === "sync") { el.innerText="حفظ... ⏳"; el.style.background="#F59E0B"; } else { el.innerText="منقطع ❌"; el.style.background="#EF4444"; } }
+    
     function updateWASelect() { let s = document.getElementById('waEmpSelect'); s.innerHTML = '<option value="">-- اختر الموظف --</option>'; if(appData.emps) appData.emps.forEach(e => s.innerHTML += `<option value="${e.id}">${e.name}</option>`); }
     window.sendWAReport = () => {
         let eid = document.getElementById('waEmpSelect').value; if(!eid) return alert("اختر الموظف!");
