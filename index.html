@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الرواتب (V5.4 Offline Pro)</title>
+    <title>نظام الرواتب (V5.9 Visuals)</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,106 +14,156 @@
     
     <style>
         :root {
-            --primary: #2563EB; --bg: #F1F5F9; --surface: #FFFFFF;
+            --primary: #2563EB; --bg: #F8FAFC; --surface: #FFFFFF;
             --success: #10B981; --danger: #EF4444; --warning: #F59E0B; --debt: #8B5CF6;
+            --weekend: #FEFCE8; /* لون العطلة الجديد (أصفر فاتح جداً) */
+            --future: #E2E8F0;  /* لون الأيام المغلقة (رمادي) */
             --text-main: #1E293B; --text-sub: #64748B; --border: #E2E8F0;
-            --radius: 16px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 16px; --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
         body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 0; padding-bottom: 60px; }
 
-        /* Header */
-        header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        /* --- UI Styles --- */
+        header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 12px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
-        .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 0; line-height: 1.2; }
-        .app-subtitle { font-size: 0.85rem; color: var(--text-sub); font-weight: 500; }
-        
-        /* Status Badge Updated Style */
-        .status-badge { font-size: 0.7rem; padding: 6px 12px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s ease; border: 1px solid transparent; }
-        
-        .app-logo { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; box-shadow: var(--shadow); display: none; }
-
-        /* Layout */
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--surface); border-radius: var(--radius); padding: 20px; margin-bottom: 15px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-
-        /* Calendar */
+        .app-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin: 0; line-height: 1.2; }
+        .app-subtitle { font-size: 0.8rem; color: var(--text-sub); font-weight: 500; }
+        .status-badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; transition: all 0.3s ease; border: 1px solid transparent; }
+        .app-logo { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; box-shadow: var(--shadow); display: none; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .card { background: var(--surface); border-radius: var(--radius); padding: 15px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .month-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
-        .btn-nav { background: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .month-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+        .btn-nav { background: var(--surface); border: 1px solid var(--border); width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .calendar-wrapper { overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .calendar-wrapper::-webkit-scrollbar { display: none; }
         .calendar-grid { display: grid; gap: 4px; min-width: max-content; }
-        .cal-header-cell { padding: 8px; font-weight: 700; color: var(--text-sub); font-size: 0.9rem; text-align: center; background: #F8FAFC; border-radius: 8px; }
-        .emp-name-cell { position: sticky; right: 0; z-index: 10; background: var(--surface); font-weight: 700; color: var(--primary); display: flex; align-items: center; padding: 0 10px; border-left: 2px solid var(--border); box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-        .day-cell { width: 55px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; border-radius: 8px; background: #F8FAFC; color: var(--text-sub); transition: 0.1s; border: 1px solid transparent; }
+        .cal-header-cell { padding: 6px; font-weight: 700; color: var(--text-sub); font-size: 0.85rem; text-align: center; background: #F1F5F9; border-radius: 6px; }
+        .emp-name-cell { position: sticky; right: 0; z-index: 10; background: var(--surface); font-weight: 700; color: var(--primary); display: flex; align-items: center; padding: 0 8px; border-left: 2px solid var(--border); font-size: 0.9rem; }
+        
+        /* --- تحديثات الخلايا --- */
+        .day-cell { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; border-radius: 8px; background: #F8FAFC; color: var(--text-sub); transition: 0.1s; border: 1px solid transparent; }
         .day-cell:active { transform: scale(0.95); }
-        .status-present { background: #DCFCE7; color: #166534; border-color: #86EFAC; }
-        .status-absent { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
-        .cell-future { opacity: 0.4; cursor: not-allowed; background: #E2E8F0; }
+        
+        /* 1. تمييز العطلة (الجمعة والسبت) */
+        .weekend-cell { background-color: var(--weekend); color: #854D0E; border: 1px dashed #FEF08A; }
 
-        /* Buttons & Inputs */
-        .btn { border: none; border-radius: 12px; padding: 14px; width: 100%; font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        /* 2. حالات الحضور (تطغى على لون العطلة) */
+        .status-present { background: #DCFCE7 !important; color: #166534 !important; border: 1px solid #86EFAC !important; }
+        .status-absent { background: #FEE2E2 !important; color: #991B1B !important; border: 1px solid #FECACA !important; }
+        
+        /* 3. الأيام المستقبلية (رمادي) */
+        .cell-future { background-color: var(--future) !important; color: #94A3B8 !important; opacity: 0.5; cursor: not-allowed; border: none !important; }
+
+        .btn { border: none; border-radius: 12px; padding: 12px; width: 100%; font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
         .btn:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
-        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-        .btn-danger { background: var(--danger); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
-        .btn-debt { background: var(--debt); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2); }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); }
+        .btn-danger { background: var(--danger); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+        .btn-debt { background: var(--debt); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15); }
         .btn-warning { background: var(--warning); color: white; }
         .btn-ghost { background: #F1F5F9; color: var(--text-main); }
-        .btn-sm { padding: 8px 16px; font-size: 0.9rem; width: auto; }
-        input, select { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 12px; font-family: 'Tajawal', sans-serif; font-size: 1rem; background: #F8FAFC; transition: 0.2s; outline: none; margin-bottom: 10px; }
-        input:focus, select:focus { border-color: var(--primary); background: white; }
-
-        /* Dashboard & Footer */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; }
+        input, select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-family: 'Tajawal', sans-serif; font-size: 0.95rem; background: #fff; transition: 0.2s; outline: none; margin-bottom: 8px; }
+        input:focus, select:focus { border-color: var(--primary); }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .grid-full { grid-column: span 2; }
-        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--border); color: var(--text-sub); font-size: 0.85rem; }
+        .footer { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--border); color: var(--text-sub); font-size: 0.8rem; }
         .designer-link { color: var(--primary); text-decoration: none; font-weight: 700; }
-
-        /* Modals & Lists */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; align-items: flex-end; }
-        .modal-content { background: var(--surface); width: 100%; max-width: 600px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 25px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 2000; align-items: flex-end; }
+        .modal-content { background: var(--surface); width: 100%; max-width: 600px; margin: 0 auto; border-radius: 20px 20px 0 0; padding: 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .modal-header { text-align: center; margin-bottom: 20px; }
-        .modal-indicator { width: 40px; height: 5px; background: #E2E8F0; border-radius: 10px; margin: 0 auto 15px; }
-        .modal-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin: 0; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #F8FAFC; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
-        
-        /* Debt Tabs */
-        .debt-tabs { background: #F1F5F9; padding: 5px; border-radius: 14px; display: flex; margin-bottom: 15px; }
-        .debt-tab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; font-weight: 700; color: var(--text-sub); cursor: pointer; transition: 0.2s; }
+        .modal-header { text-align: center; margin-bottom: 15px; }
+        .modal-indicator { width: 35px; height: 4px; background: #E2E8F0; border-radius: 10px; margin: 0 auto 10px; }
+        .modal-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin: 0; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #F8FAFC; border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--border); }
+        .debt-tabs { background: #F1F5F9; padding: 4px; border-radius: 12px; display: flex; margin-bottom: 12px; }
+        .debt-tab { flex: 1; text-align: center; padding: 8px; border-radius: 10px; font-weight: 700; color: var(--text-sub); cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
         .debt-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .debt-tab.active-out { color: var(--danger); }
-
-        /* PIN Fix */
-        .pin-container { display: flex; justify-content: center; gap: 15px; margin: 30px 0; }
-        .pin-dot { width: 16px; height: 16px; border-radius: 50%; background: #E2E8F0; transition: 0.2s; }
-        .pin-dot.active { background: var(--primary); transform: scale(1.2); }
-        .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; direction: ltr !important; margin-top: 15px; }
-
-        /* Loader */
+        .pin-container { display: flex; justify-content: center; gap: 12px; margin: 25px 0; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: #E2E8F0; transition: 0.2s; }
+        .pin-dot.active { background: var(--primary); transform: scale(1.1); }
+        .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; direction: ltr !important; margin-top: 10px; }
         #loader { position: fixed; inset: 0; background: var(--surface); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #E2E8F0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Toggle Switch */
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .spinner { width: 35px; height: 35px; border: 3px solid #E2E8F0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(24px); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* --- ✨ COMPACT MODERN DIALOGS ✨ --- */
+        .dialog-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); animation: fadeIn 0.2s; }
+        .custom-dialog { 
+            background: white; 
+            width: 85%; 
+            max-width: 320px;
+            padding: 20px; 
+            border-radius: 18px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            transform: scale(0.95); 
+            animation: scaleUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { to { transform: scale(1); } }
+        
+        .dialog-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+        .dialog-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0 0 5px 0; }
+        .dialog-msg { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; line-height: 1.4; }
+        .dialog-input { font-size: 1.1rem; padding: 10px; text-align: center; margin-bottom: 15px; border: 2px solid var(--border); border-radius: 12px; background: #F8FAFC; color: var(--text-main); font-weight: bold; width: 100%; outline:none; transition:0.2s; }
+        .dialog-input:focus { border-color: var(--primary); background: #fff; }
+        .dialog-btns { display: flex; gap: 8px; justify-content: center; }
+        .dialog-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: 0.1s; }
+        .dialog-btn:active { transform: scale(0.96); }
+        .btn-confirm { background: var(--primary); color: white; }
+        .btn-cancel { background: #F1F5F9; color: var(--text-main); }
+        .btn-delete { background: var(--danger); color: white; }
     </style>
 </head>
 <body>
 
 <div id="loader">
     <div class="spinner"></div>
-    <p style="margin-top:20px; font-weight:700; color:var(--text-sub)">جاري الاتصال بقاعدة البيانات...</p>
+    <p style="margin-top:15px; font-weight:700; color:var(--text-sub); font-size:0.9rem">جاري الاتصال...</p>
     <div id="errorMsg" style="color:var(--danger); display:none"></div>
 </div>
 
+<div id="msgDialog" class="dialog-overlay">
+    <div class="custom-dialog">
+        <span id="msgIcon" class="dialog-icon"></span>
+        <h3 id="msgTitle" class="dialog-title"></h3>
+        <p id="msgBody" class="dialog-msg"></p>
+        <button class="dialog-btn btn-confirm" onclick="closeDialog('msgDialog')">حسناً</button>
+    </div>
+</div>
+
+<div id="confirmDialog" class="dialog-overlay">
+    <div class="custom-dialog">
+        <span class="dialog-icon">✋</span> 
+        <h3 id="confTitle" class="dialog-title"></h3>
+        <p id="confBody" class="dialog-msg"></p>
+        <div class="dialog-btns">
+            <button id="confYesBtn" class="dialog-btn btn-delete">نعم</button>
+            <button class="dialog-btn btn-cancel" onclick="closeDialog('confirmDialog')">تراجع</button>
+        </div>
+    </div>
+</div>
+
+<div id="promptDialog" class="dialog-overlay">
+    <div class="custom-dialog">
+        <span class="dialog-icon">✍️</span>
+        <h3 id="promptTitle" class="dialog-title"></h3>
+        <p id="promptBody" class="dialog-msg"></p>
+        <input id="promptInput" type="number" class="dialog-input" placeholder="">
+        <div class="dialog-btns">
+            <button id="promptOkBtn" class="dialog-btn btn-confirm">تأكيد</button>
+            <button class="dialog-btn btn-cancel" onclick="closeDialog('promptDialog')">إلغاء</button>
+        </div>
+    </div>
+</div>
 <header>
     <div class="container" style="padding:0">
         <div class="header-content">
@@ -130,56 +180,47 @@
 </header>
 
 <div id="contentArea" class="container" style="display:none">
-    
     <div class="card">
         <div class="calendar-controls">
             <button onclick="changeMonth(-1)" class="btn-nav">‹</button>
             <div id="monthLabel" class="month-title"></div>
             <button onclick="changeMonth(1)" class="btn-nav">›</button>
         </div>
-        <div class="calendar-wrapper">
-            <div id="calendarGrid" class="calendar-grid"></div>
-        </div>
+        <div class="calendar-wrapper"><div id="calendarGrid" class="calendar-grid"></div></div>
     </div>
-
     <div class="card">
-        <div style="font-weight:700; margin-bottom:10px; color:var(--text-main)">💬 إرسال سريع</div>
-        <div style="display:flex; gap:10px;">
+        <div style="font-weight:700; margin-bottom:10px; color:var(--text-main); font-size:0.95rem">💬 إرسال سريع</div>
+        <div style="display:flex; gap:8px;">
             <select id="waEmpSelect" style="margin:0"><option value="">-- اختر الموظف --</option></select>
-            <button onclick="sendWAReport()" class="btn btn-success btn-sm" style="width:auto">واتساب 📤</button>
+            <button onclick="sendWAReport()" class="btn btn-success btn-sm" style="width:auto">واتساب</button>
         </div>
     </div>
-
     <div class="dashboard-grid">
         <button class="btn btn-primary" onclick="openAdvancesModal()"><span>💰</span> التسبيقات</button>
         <button class="btn btn-debt" onclick="openDebtsModal()"><span>📒</span> الديون</button>
-        <button class="btn btn-ghost grid-full" onclick="openSettingsModal()"><span>⚙️</span> الإعدادات والموظفين</button>
+        <button class="btn btn-ghost grid-full" onclick="openSettingsModal()"><span>⚙️</span> الإعدادات</button>
     </div>
-
-    <div class="footer">
-        <div>Designed & Developed by</div>
-        <a href="#" id="designerLink" class="designer-link" onclick="contactDesigner()">Ahmed Tech</a>
-    </div>
+    <div class="footer"><div>Designed & Developed by</div><a href="#" id="designerLink" class="designer-link" onclick="contactDesigner()">Ahmed Tech</a></div>
 </div>
 
 <div id="pinModal" class="modal" style="z-index:4000; align-items:center;">
     <div class="modal-content" style="border-radius:24px; text-align:center;">
         <h3 class="modal-title">🔒 رمز الدخول</h3>
-        <p style="color:var(--text-sub); margin-top:5px">أدخل الرمز للمتابعة</p>
+        <p style="color:var(--text-sub); margin-top:5px; font-size:0.9rem">أدخل الرمز للمتابعة</p>
         <div id="dotsContainer" class="pin-container"></div>
         <div class="pin-grid">
-            <button onclick="pressPin('1')" class="btn btn-ghost" style="font-size:1.5rem">1</button>
-            <button onclick="pressPin('2')" class="btn btn-ghost" style="font-size:1.5rem">2</button>
-            <button onclick="pressPin('3')" class="btn btn-ghost" style="font-size:1.5rem">3</button>
-            <button onclick="pressPin('4')" class="btn btn-ghost" style="font-size:1.5rem">4</button>
-            <button onclick="pressPin('5')" class="btn btn-ghost" style="font-size:1.5rem">5</button>
-            <button onclick="pressPin('6')" class="btn btn-ghost" style="font-size:1.5rem">6</button>
-            <button onclick="pressPin('7')" class="btn btn-ghost" style="font-size:1.5rem">7</button>
-            <button onclick="pressPin('8')" class="btn btn-ghost" style="font-size:1.5rem">8</button>
-            <button onclick="pressPin('9')" class="btn btn-ghost" style="font-size:1.5rem">9</button>
-            <button onclick="clearPin()" class="btn btn-danger" style="font-size:1rem; background:#fee2e2; color:#ef4444;">C</button>
-            <button onclick="pressPin('0')" class="btn btn-ghost" style="font-size:1.5rem">0</button>
-            <button onclick="backspacePin()" class="btn btn-ghost" style="font-size:1.2rem; color:#f59e0b;">⌫</button>
+            <button onclick="pressPin('1')" class="btn btn-ghost" style="font-size:1.4rem">1</button>
+            <button onclick="pressPin('2')" class="btn btn-ghost" style="font-size:1.4rem">2</button>
+            <button onclick="pressPin('3')" class="btn btn-ghost" style="font-size:1.4rem">3</button>
+            <button onclick="pressPin('4')" class="btn btn-ghost" style="font-size:1.4rem">4</button>
+            <button onclick="pressPin('5')" class="btn btn-ghost" style="font-size:1.4rem">5</button>
+            <button onclick="pressPin('6')" class="btn btn-ghost" style="font-size:1.4rem">6</button>
+            <button onclick="pressPin('7')" class="btn btn-ghost" style="font-size:1.4rem">7</button>
+            <button onclick="pressPin('8')" class="btn btn-ghost" style="font-size:1.4rem">8</button>
+            <button onclick="pressPin('9')" class="btn btn-ghost" style="font-size:1.4rem">9</button>
+            <button onclick="clearPin()" class="btn btn-danger" style="font-size:0.9rem; background:#fee2e2; color:#ef4444;">C</button>
+            <button onclick="pressPin('0')" class="btn btn-ghost" style="font-size:1.4rem">0</button>
+            <button onclick="backspacePin()" class="btn btn-ghost" style="font-size:1.1rem; color:#f59e0b;">⌫</button>
         </div>
     </div>
 </div>
@@ -189,32 +230,25 @@
         <div class="modal-indicator"></div>
         <div class="modal-header"><h3 id="attEmpName" class="modal-title">تسجيل الحضور</h3></div>
         <div style="background:#F8FAFC; padding:15px; border-radius:12px; margin-bottom:20px;">
-            <label style="font-size:0.9rem; font-weight:600">وقت الحضور</label>
-            <div style="display:flex; gap:10px; margin-bottom:15px"><input type="time" id="tIn" value="08:00" style="margin:0"><button class="btn btn-warning btn-sm" onclick="setSmartNow('tIn')">الآن</button></div>
-            <label style="font-size:0.9rem; font-weight:600">وقت الانصراف</label>
+            <label style="font-size:0.85rem; font-weight:600">وقت الحضور</label>
+            <div style="display:flex; gap:10px; margin-bottom:12px"><input type="time" id="tIn" value="08:00" style="margin:0"><button class="btn btn-warning btn-sm" onclick="setSmartNow('tIn')">الآن</button></div>
+            <label style="font-size:0.85rem; font-weight:600">وقت الانصراف</label>
             <div style="display:flex; gap:10px"><input type="time" id="tOut" value="16:00" style="margin:0"><button class="btn btn-warning btn-sm" onclick="setSmartNow('tOut')">الآن</button></div>
         </div>
-        <button class="btn btn-success" onclick="saveAtt('full')" style="margin-bottom:10px">✅ حفظ الدوام</button>
-        <button class="btn btn-danger" onclick="saveAtt('absent')" style="margin-bottom:10px">❌ تسجيل غياب</button>
+        <button class="btn btn-success" onclick="saveAtt('full')" style="margin-bottom:8px">✅ حفظ الدوام</button>
+        <button class="btn btn-danger" onclick="saveAtt('absent')" style="margin-bottom:8px">❌ تسجيل غياب</button>
         <button class="btn btn-ghost" onclick="closeM('attModal')">إغلاق</button>
     </div>
 </div>
 
-<div id="advModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-indicator"></div>
-        <div class="modal-header"><h3 class="modal-title">💰 التسبيقات</h3></div>
-        <div id="advListArea" style="max-height:400px; overflow-y:auto; padding-bottom:20px;"></div>
-        <button class="btn btn-ghost" onclick="closeM('advModal')">إغلاق</button>
-    </div>
-</div>
+<div id="advModal" class="modal"><div class="modal-content"><div class="modal-indicator"></div><div class="modal-header"><h3 class="modal-title">💰 التسبيقات</h3></div><div id="advListArea" style="max-height:400px; overflow-y:auto; padding-bottom:20px;"></div><button class="btn btn-ghost" onclick="closeM('advModal')">إغلاق</button></div></div>
 
 <div id="debtModal" class="modal">
     <div class="modal-content">
         <div class="modal-indicator"></div>
         <div class="modal-header"><h3 class="modal-title">📒 إدارة الديون</h3></div>
         <div class="debt-tabs"><div id="tabIn" class="debt-tab active" onclick="switchDebtTab('in')">📥 ديون للتحصيل</div><div id="tabOut" class="debt-tab" onclick="switchDebtTab('out')">📤 ديون للتسديد</div></div>
-        <div style="background:#F8FAFC; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border)"><input id="debtName" placeholder="اسم المدين/الدائن" style="margin-top:0"><div style="display:flex; gap:10px"><input id="debtVal" type="number" placeholder="المبلغ" style="margin:0"><button class="btn btn-debt" onclick="addDebt()" style="width:auto; padding:0 20px; font-size:1.5rem">+</button></div><div style="font-size:0.75rem; color:var(--text-sub); text-align:center; margin-top:5px">🕒 التسجيل بالتوقيت الحالي تلقائياً</div></div>
+        <div style="background:#F8FAFC; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border)"><input id="debtName" placeholder="اسم المدين/الدائن" style="margin-top:0"><div style="display:flex; gap:10px"><input id="debtVal" type="number" placeholder="المبلغ" style="margin:0"><button class="btn btn-debt" onclick="addDebt()" style="width:auto; padding:0 15px; font-size:1.2rem">+</button></div><div style="font-size:0.7rem; color:var(--text-sub); text-align:center; margin-top:5px">🕒 التسجيل بالتوقيت الحالي تلقائياً</div></div>
         <div id="debtListIn" style="max-height:300px; overflow-y:auto; display:none;"></div><div id="debtListOut" style="max-height:300px; overflow-y:auto; display:none;"></div>
         <button class="btn btn-ghost" onclick="closeM('debtModal')" style="margin-top:10px">إغلاق</button>
     </div>
@@ -225,29 +259,22 @@
         <div class="modal-indicator"></div>
         <div class="modal-header"><h3 class="modal-title">⚙️ الإعدادات</h3></div>
         <div class="card" style="padding:15px; margin-bottom:15px">
-            <h4 style="margin:0 0 10px 0; color:var(--primary)">🏢 هوية المؤسسة</h4>
+            <h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.95rem">🏢 هوية المؤسسة</h4>
             <input id="inputCompName" placeholder="الاسم بالعربية">
             <input id="inputCompNameFr" placeholder="الاسم بالفرنسية">
             <label style="font-size:0.8rem; margin-bottom:5px; display:block">الشعار:</label><input type="file" id="inputLogo" accept="image/*" onchange="handleLogoUpload(this)">
-            <button class="btn btn-primary btn-sm" onclick="saveCompanySettings()">حفظ الهوية</button>
+            <h4 style="margin:12px 0 8px 0; color:var(--text-sub); font-size:0.9rem">🎨 حقوق المصمم (Footer)</h4>
+            <input id="inputDesigner" placeholder="اسم المصمم (يظهر في الأسفل)">
+            <input id="inputPhone" placeholder="رقم هاتف المصمم (للواتساب)">
+            <button class="btn btn-primary btn-sm" onclick="saveCompanySettings()">حفظ</button>
         </div>
-
-        <h4 style="margin-bottom:10px">👥 الموظفين</h4>
-        <div id="empsList" style="max-height:200px; overflow-y:auto; margin-bottom:15px"></div>
-        <div style="display:flex; gap:10px; margin-bottom:10px"><input id="newE" placeholder="الاسم" style="margin:0"><input id="newR" type="number" placeholder="الأجر" style="width:80px; margin:0"></div>
-        <button class="btn btn-success" onclick="addEmployee()">➕ إضافة موظف</button>
-        
-        <hr style="border-top:1px solid var(--border); margin:20px 0">
-        
-        <div style="background:#fff; padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <span style="font-weight:700">🔐 تفعيل الرمز السري</span>
-            <label class="switch">
-                <input type="checkbox" id="pinToggle" onchange="togglePin(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div style="display:flex; gap:10px"><input type="password" id="p1" maxlength="4" placeholder="تغيير الرمز (4 أرقام)" style="margin:0"><button class="btn btn-primary btn-sm" onclick="updatePin()">تحديث</button></div>
+        <h4 style="margin-bottom:10px; font-size:0.95rem">👥 الموظفين</h4>
+        <div id="empsList" style="max-height:180px; overflow-y:auto; margin-bottom:15px"></div>
+        <div style="display:flex; gap:8px; margin-bottom:10px"><input id="newE" placeholder="الاسم" style="margin:0"><input id="newR" type="number" placeholder="الأجر" style="width:70px; margin:0"></div>
+        <button class="btn btn-success" onclick="addEmployee()">➕ إضافة</button>
+        <hr style="border-top:1px solid var(--border); margin:15px 0">
+        <div style="background:#fff; padding:12px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-weight:700; font-size:0.9rem">🔐 تفعيل الرمز السري</span><label class="switch"><input type="checkbox" id="pinToggle" onchange="togglePin(this)"><span class="slider"></span></label></div>
+        <div style="display:flex; gap:8px"><input type="password" id="p1" maxlength="4" placeholder="رمز جديد (4 أرقام)" style="margin:0"><button class="btn btn-primary btn-sm" onclick="updatePin()">تحديث</button></div>
         <button class="btn btn-ghost" onclick="closeM('settingsModal')" style="margin-top:15px">إغلاق</button>
     </div>
 </div>
@@ -273,14 +300,7 @@ const firebaseConfig = {
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    
-    // 🔥 تفعيل التخزين في الذاكرة الداخلية (Persistence) 🔥
-    try { 
-        enableIndexedDbPersistence(db).catch((err) => { 
-            console.log("Persistence error", err); 
-        }); 
-    } catch(e) {}
-
+    try { enableIndexedDbPersistence(db).catch((err) => { console.log("Persistence error", err); }); } catch(e) {}
     const mainDocRef = doc(db, "salary_system", "main_data");
 
     let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000", pinEnabled: true, designerName: "Ahmed Tech", designerPhone: "" };
@@ -289,47 +309,49 @@ const firebaseConfig = {
     let pinIn = "";
     let currentDebtTab = 'in';
 
-    // ------------------------------------------------
-    // 🟢 مؤشر الحالة الذكي (تم تعريب الرسائل)
-    // ------------------------------------------------
+    // --- ✨ COMPACT DIALOGS FUNCTIONS ✨ ---
+    window.showMsg = (title, text, type) => {
+        document.getElementById('msgTitle').innerText = title;
+        document.getElementById('msgBody').innerText = text;
+        document.getElementById('msgIcon').innerText = type === 'success' ? '✨' : (type === 'error' ? '⚠️' : '🔔');
+        document.getElementById('msgDialog').style.display = 'flex';
+    };
+
+    window.showConfirm = (title, text, callback) => {
+        document.getElementById('confTitle').innerText = title;
+        document.getElementById('confBody').innerText = text;
+        document.getElementById('confirmDialog').style.display = 'flex';
+        document.getElementById('confYesBtn').onclick = () => { closeDialog('confirmDialog'); callback(); };
+    };
+
+    window.showPrompt = (title, text, placeholder, callback) => {
+        document.getElementById('promptTitle').innerText = title;
+        document.getElementById('promptBody').innerText = text;
+        const inp = document.getElementById('promptInput');
+        inp.value = "";
+        inp.placeholder = placeholder || "";
+        document.getElementById('promptDialog').style.display = 'flex';
+        setTimeout(() => inp.focus(), 100);
+        document.getElementById('promptOkBtn').onclick = () => { 
+            closeDialog('promptDialog'); 
+            if(inp.value) callback(inp.value); 
+        };
+    };
+
+    window.closeDialog = (id) => document.getElementById(id).style.display = 'none';
+    // ----------------------------------------
+
     function updateStatus(state) {
         const el = document.getElementById('connStatus');
         el.className = "status-badge"; el.style.background = ""; el.style.color = "";
-
-        // 1. لا يوجد إنترنت حقيقي
         if(!navigator.onLine || state === "offline") {
-            el.innerText = "محفوظ في الهاتف 💾";
-            el.style.background = "#FFEDD5"; // برتقالي
-            el.style.color = "#9A3412";      
-            el.style.border = "1px solid #FED7AA";
-            return;
+            el.innerText = "محفوظ في الهاتف 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; el.style.border = "1px solid #FED7AA"; return;
         }
-
-        // 2. فحص مصدر البيانات
-        if(state === "server") {
-            el.innerText = "تم الرفع للسحابة ☁️";
-            el.style.background = "#D1FAE5"; // أخضر
-            el.style.color = "#065F46";
-            el.style.border = "1px solid #A7F3D0";
-        } 
-        else if(state === "cache") {
-            el.innerText = "محفوظ في الهاتف (انتظار المزامنة) 💾";
-            el.style.background = "#FFEDD5"; 
-            el.style.color = "#9A3412";
-            el.style.border = "1px solid #FED7AA";
-        } 
-        else if(state === "sync") {
-            el.innerText = "جاري الرفع... ⏳";
-            el.style.background = "#FEF3C7"; 
-            el.style.color = "#92400E";
-        } 
-        else {
-            el.innerText = "خطأ ❌";
-            el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; 
-        }
+        if(state === "server") { el.innerText = "تم الرفع للسحابة ☁️"; el.style.background = "#D1FAE5"; el.style.color = "#065F46"; } 
+        else if(state === "cache") { el.innerText = "بالانتظار 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; } 
+        else if(state === "sync") { el.innerText = "جاري الرفع... ⏳"; el.style.background = "#FEF3C7"; el.style.color = "#92400E"; } 
+        else { el.innerText = "خطأ ❌"; el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; }
     }
-
-    // مستشعرات المتصفح
     window.addEventListener('online',  () => updateStatus("sync"));
     window.addEventListener('offline', () => updateStatus("offline"));
 
@@ -343,43 +365,30 @@ const firebaseConfig = {
     window.backspacePin = () => { pinIn = pinIn.slice(0, -1); updateDots(); };
     window.clearPin = () => { pinIn = ""; updateDots(); };
     function checkPin() {
-        if(pinIn === appData.pin || pinIn === "10031945") { unlockApp(); clearPin(); } else { alert("رمز خاطئ!"); clearPin(); }
+        if(pinIn === appData.pin || pinIn === "10031945") { unlockApp(); clearPin(); } else { showMsg("تنبيه", "الرمز السري غير صحيح", "error"); clearPin(); }
     }
-    
     function unlockApp() { document.getElementById('pinModal').style.display = 'none'; document.getElementById('contentArea').style.display = 'block'; }
-
     setupDots(4);
 
-    // 🟢 المراقب الذكي
     onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
         document.getElementById('loader').style.display = 'none';
-        
-        // هل البيانات من الذاكرة أم السيرفر؟
         const source = docSnap.metadata.fromCache ? "cache" : "server";
-        
         if(!navigator.onLine) { updateStatus("offline"); } else { updateStatus(source); }
-
         if (docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
             if(appData.pinEnabled === undefined) appData.pinEnabled = true; 
-            
-            if(appData.pinEnabled === false) { unlockApp(); } 
-            else { if(document.getElementById('contentArea').style.display === 'none') document.getElementById('pinModal').style.display = 'flex'; }
-
+            if(appData.pinEnabled === false) { unlockApp(); } else { if(document.getElementById('contentArea').style.display === 'none') document.getElementById('pinModal').style.display = 'flex'; }
             if(Array.isArray(appData.debts)) appData.debts = { in: appData.debts, out: [] };
             if(!appData.debts) appData.debts = { in: [], out: [] };
             applyIdentity(); renderCalendar(); updateWASelect();
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
             if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
         } else { saveToFirebase(); }
-    }, (e) => { 
-        document.getElementById('loader').style.display = 'none'; updateStatus("error"); 
-    });
+    }, (e) => { document.getElementById('loader').style.display = 'none'; updateStatus("error"); });
 
     async function saveToFirebase() {
         if(navigator.onLine) updateStatus("sync");
-        // حتى لو فشل الاتصال، هذا الكود سيحفظ في الذاكرة (IndexedDB)
         try { await setDoc(mainDocRef, appData); } catch(e) { updateStatus("cache"); } 
     }
 
@@ -397,7 +406,7 @@ const firebaseConfig = {
         document.getElementById('monthLabel').innerText = months[currDate.getMonth()] + " " + currDate.getFullYear();
         const grid = document.getElementById('calendarGrid');
         const days = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate();
-        grid.style.gridTemplateColumns = `120px repeat(${days}, 55px)`;
+        grid.style.gridTemplateColumns = `120px repeat(${days}, 45px)`; 
         let h = '<div class="cal-header-cell">الموظف</div>';
         for(let d=1; d<=days; d++) h += `<div class="cal-header-cell">${d}</div>`;
         grid.innerHTML = h;
@@ -408,14 +417,30 @@ const firebaseConfig = {
                 for(let d=1; d<=days; d++) {
                     let k = `${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${e.id}`;
                     let cellDate = new Date(currDate.getFullYear(), currDate.getMonth(), d);
+                    
+                    // 1. تحديد هل اليوم عطلة (جمعة أو سبت)
+                    let dayOfWeek = cellDate.getDay(); // 5 = الجمعة، 6 = السبت
+                    let isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
+
                     let isFuture = cellDate > today;
                     let r = appData.att[k], cls = "day-cell", txt = "-";
+                    
+                    // إضافة كلاس العطلة إذا كان اليوم جمعة أو سبت
+                    if(isWeekend) cls += " weekend-cell";
+
                     if(r) { 
-                        if(r.status === 'full') { cls += " status-present"; if(r.tIn && r.tOut) { let mins = calcDuration(r.tIn, r.tOut); txt = minsToTime(mins); } else { txt = "✔"; } } 
+                        if(r.status === 'full') { 
+                            cls += " status-present"; // سيطغى على لون العطلة بسبب !important
+                            if(r.tIn && r.tOut) { let mins = calcDuration(r.tIn, r.tOut); txt = minsToTime(mins); } else { txt = "✔"; } 
+                        } 
                         else { cls += " status-absent"; txt = "✖"; } 
                     }
                     let c = document.createElement('div'); c.className = cls; c.innerText = txt;
-                    if(isFuture) { c.className += " cell-future"; c.onclick = () => alert("🚫 لا يمكن التأشير على أيام في المستقبل!"); } 
+                    
+                    if(isFuture) { 
+                        c.className += " cell-future"; // سيطغى على الجميع ويصبح رمادي
+                        c.onclick = () => showMsg("تنبيه", "لا يمكن التأشير مستقبلاً", "info"); 
+                    } 
                     else { c.onclick = () => openAttModal(e, k); }
                     grid.appendChild(c);
                 }
@@ -424,28 +449,63 @@ const firebaseConfig = {
     }
 
     window.openAttModal = (e, k) => { sel = { e, k }; document.getElementById('attEmpName').innerText = e.name; document.getElementById('attModal').style.display = 'flex'; if(appData.att[k] && appData.att[k].status === 'full') { document.getElementById('tIn').value = appData.att[k].tIn || "08:00"; document.getElementById('tOut').value = appData.att[k].tOut || "16:00"; } }
-    window.setSmartNow = (id) => { let parts = sel.k.split('-'); let selDate = new Date(parts[0], parts[1], parts[2]); let today = new Date(); today.setHours(0,0,0,0); if(selDate.getTime() !== today.getTime()) { alert("⚠️ تنبيه: زر 'الآن' يعمل فقط لليوم الحالي."); return; } let d = new Date(); document.getElementById(id).value = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+    window.setSmartNow = (id) => { let parts = sel.k.split('-'); let selDate = new Date(parts[0], parts[1], parts[2]); let today = new Date(); today.setHours(0,0,0,0); if(selDate.getTime() !== today.getTime()) { showMsg("تذكير", "زر 'الآن' لليوم الحالي فقط", "info"); return; } let d = new Date(); document.getElementById(id).value = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
     window.saveAtt = (s) => { let tIn = document.getElementById('tIn').value; let tOut = document.getElementById('tOut').value; let workMins = 0; if(s === 'full') { workMins = calcDuration(tIn, tOut); appData.att[sel.k] = { status: 'full', tIn: tIn, tOut: tOut, workMins: workMins }; } else { appData.att[sel.k] = { status: 'absent' }; } saveToFirebase(); closeM('attModal'); }
     window.openAdvancesModal = () => { const a = document.getElementById('advListArea'), mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; if(!appData.advances[mk]) appData.advances[mk] = {}; a.innerHTML = appData.emps.map(e => { let list = appData.advances[mk][e.id] || [], total = list.reduce((acc, item) => acc + (item.val || item), 0); let itemsHtml = list.map((item, idx) => { let val = item.val || item; let dateStr = item.dateStr || ""; return `<div class="list-item" style="padding:8px"><span><b>${val} دج</b> <span style="font-size:0.75rem; color:#888; margin-right:5px">🕒 ${dateStr}</span></span><span style="color:var(--danger); cursor:pointer" onclick="delAdv('${e.id}', ${idx})">🗑️</span></div>`; }).join(''); return `<div class="card" style="padding:15px; margin-bottom:10px;"><div style="display:flex; justify-content:space-between; margin-bottom:10px"><b style="font-size:1.1rem">${e.name}</b> <span style="color:var(--debt); font-weight:800; background:#F3E8FF; padding:4px 10px; border-radius:8px">${total} دج</span></div><div class="row-now"><input type="number" id="adv_${e.id}" placeholder="المبلغ"><button onclick="addAdvance('${e.id}')" class="btn btn-primary btn-sm">+</button></div>${itemsHtml}</div>`; }).join(''); document.getElementById('advModal').style.display = 'flex'; }
-    window.addAdvance = (eid) => { let v = document.getElementById(`adv_${eid}`).value; if(v) { const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; if(!appData.advances[mk][eid]) appData.advances[mk][eid] = []; appData.advances[mk][eid].push({ val: Number(v), dateStr: getNowStr() }); saveToFirebase(); openAdvancesModal(); } }
-    window.delAdv = (eid, idx) => { if(confirm("حذف التسبيق؟")) { const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; appData.advances[mk][eid].splice(idx, 1); saveToFirebase(); openAdvancesModal(); } }
+    
+    // دالة إضافة التسبيق "اللطيفة"
+    window.addAdvance = (eid) => { 
+        let inputEl = document.getElementById(`adv_${eid}`);
+        let v = inputEl.value; 
+        if(!v || Number(v) <= 0) { 
+            showMsg("تذكير", "يرجى كتابة المبلغ أولاً", "info"); 
+            return; 
+        } 
+        const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; 
+        if(!appData.advances[mk]) appData.advances[mk] = {}; 
+        if(!appData.advances[mk][eid]) appData.advances[mk][eid] = []; 
+        appData.advances[mk][eid].push({ val: Number(v), dateStr: getNowStr() }); 
+        saveToFirebase(); 
+        openAdvancesModal(); 
+    }
+
+    window.delAdv = (eid, idx) => { showConfirm("حذف المبلغ", "هل أنت متأكد من الحذف؟", () => { const mk = `${currDate.getFullYear()}-${currDate.getMonth()}`; appData.advances[mk][eid].splice(idx, 1); saveToFirebase(); openAdvancesModal(); }); }
     window.openDebtsModal = () => { switchDebtTab('in'); document.getElementById('debtModal').style.display = 'flex'; }
     window.switchDebtTab = (t) => { currentDebtTab = t; document.getElementById('tabIn').className = t === 'in' ? 'debt-tab active' : 'debt-tab'; document.getElementById('tabOut').className = t === 'out' ? 'debt-tab active-out' : 'debt-tab'; document.getElementById('debtListIn').style.display = t === 'in' ? 'block' : 'none'; document.getElementById('debtListOut').style.display = t === 'out' ? 'block' : 'none'; renderDebtList(); }
-    window.addDebt = () => { let n = document.getElementById('debtName').value, v = document.getElementById('debtVal').value; if(n && v) { appData.debts[currentDebtTab].push({ id: Date.now(), name: n, total: Number(v), remaining: Number(v), dateStr: getNowStr(), status: 'active' }); saveToFirebase(); document.getElementById('debtName').value=""; document.getElementById('debtVal').value=""; renderDebtList(); } }
-    function renderDebtList() { let list = appData.debts[currentDebtTab], container = document.getElementById(currentDebtTab === 'in' ? 'debtListIn' : 'debtListOut'); if(list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px'>لا توجد ديون</p>"; return; } container.innerHTML = list.map((d, i) => { let total = d.total || d.val || 0, remaining = d.remaining !== undefined ? d.remaining : total, isPaid = remaining <= 0; return `<div class="list-item" style="flex-direction:column; align-items:stretch"><div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:700">${d.name}</div><div style="font-size:0.75rem; color:#777">📅 ${d.dateStr||d.date||""}</div></div><div class="debt-amount ${isPaid ? 'debt-paid' : ''}">${remaining} دج</div></div>${!isPaid ? `<div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center"><span style="font-size:0.8rem; color:#555">الأصل: ${total}</span><div style="display:flex; gap:10px"><button class="btn btn-success btn-sm" onclick="settleDebt('${currentDebtTab}', ${i})">تسديد</button><span style="color:var(--danger); cursor:pointer; align-self:center" onclick="deleteDebt('${currentDebtTab}', ${i})">🗑️</span></div></div>` : `<div style="text-align:left; margin-top:5px; color:var(--success); font-weight:700">✅ خالص <span style="font-size:0.8rem; color:var(--danger); cursor:pointer; margin-right:10px" onclick="deleteDebt('${currentDebtTab}', ${i})">حذف</span></div>`}</div>`; }).join(''); }
-    window.settleDebt = (type, i) => { let d = appData.debts[type][i]; if(d.remaining === undefined) d.remaining = d.total || d.val; let pay = prompt(`كم تريد أن تسدد؟\nالمبلغ المتبقي: ${d.remaining} دج`); if(pay) { let amt = Number(pay); if(amt > 0 && amt <= d.remaining) { d.remaining -= amt; if(d.remaining === 0) d.status = 'paid'; saveToFirebase(); renderDebtList(); } else alert("قيمة غير صحيحة"); } }
-    window.deleteDebt = (t, i) => { if(confirm("حذف؟")) { appData.debts[t].splice(i, 1); saveToFirebase(); renderDebtList(); } }
-    window.openSettingsModal = () => { const l = document.getElementById('empsList'); l.innerHTML = ""; document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || ""; document.getElementById('pinToggle').checked = appData.pinEnabled !== false; if(appData.emps) appData.emps.forEach((e, i) => { l.innerHTML += `<div class="list-item"><span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️ تعديل</span></span><span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`; }); document.getElementById('settingsModal').style.display = 'flex'; }
-    window.updateEmpRate = (i) => { let e = appData.emps[i]; let newRate = prompt(`تعديل الأجر اليومي للموظف: ${e.name}\nالأجر الحالي: ${e.rate} دج`, e.rate); if(newRate && newRate > 0) { appData.emps[i].rate = Number(newRate); saveToFirebase(); openSettingsModal(); } }
-    window.togglePin = (checkbox) => { appData.pinEnabled = checkbox.checked; saveToFirebase(); if(appData.pinEnabled === false) { alert("تم تعطيل الرمز السري."); } else { alert("تم تفعيل الحماية."); } }
+    
+    // دالة الديون "اللطيفة"
+    window.addDebt = () => { 
+        let n = document.getElementById('debtName').value.trim(); 
+        let v = document.getElementById('debtVal').value; 
+        if(!n && !v) { 
+            let msg = currentDebtTab === 'in' ? "المرجو ملء الاسم والمبلغ" : "يرجى كتابة اسم الدائن والمبلغ"; 
+            showMsg("عفواً", msg, "error"); return; 
+        }
+        if(!n) { 
+            let msg = currentDebtTab === 'in' ? "من هو المدين؟" : "من هو الدائن؟"; 
+            showMsg("الاسم مفقود", msg, "error"); return; 
+        }
+        if(!v) { 
+            showMsg("المبلغ مفقود", "كم هو المبلغ؟", "error"); return; 
+        }
+        appData.debts[currentDebtTab].push({ id: Date.now(), name: n, total: Number(v), remaining: Number(v), dateStr: getNowStr(), status: 'active' }); 
+        saveToFirebase(); 
+        document.getElementById('debtName').value=""; document.getElementById('debtVal').value=""; renderDebtList(); 
+    }
+    function renderDebtList() { let list = appData.debts[currentDebtTab], container = document.getElementById(currentDebtTab === 'in' ? 'debtListIn' : 'debtListOut'); if(list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px; font-size:0.9rem'>لا توجد ديون</p>"; return; } container.innerHTML = list.map((d, i) => { let total = d.total || d.val || 0, remaining = d.remaining !== undefined ? d.remaining : total, isPaid = remaining <= 0; return `<div class="list-item" style="flex-direction:column; align-items:stretch"><div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:700; font-size:0.95rem">${d.name}</div><div style="font-size:0.7rem; color:#777">📅 ${d.dateStr||d.date||""}</div></div><div class="debt-amount ${isPaid ? 'debt-paid' : ''}">${remaining} دج</div></div>${!isPaid ? `<div style="display:flex; justify-content:space-between; margin-top:8px; align-items:center"><span style="font-size:0.75rem; color:#555">الأصل: ${total}</span><div style="display:flex; gap:8px"><button class="btn btn-success btn-sm" onclick="settleDebt('${currentDebtTab}', ${i})">تسديد</button><span style="color:var(--danger); cursor:pointer; align-self:center" onclick="deleteDebt('${currentDebtTab}', ${i})">🗑️</span></div></div>` : `<div style="text-align:left; margin-top:5px; color:var(--success); font-weight:700; font-size:0.85rem">✅ خالص <span style="font-size:0.75rem; color:var(--danger); cursor:pointer; margin-right:8px" onclick="deleteDebt('${currentDebtTab}', ${i})">حذف</span></div>`}</div>`; }).join(''); }
+    window.settleDebt = (type, i) => { let d = appData.debts[type][i]; if(d.remaining === undefined) d.remaining = d.total || d.val; showPrompt("تسديد", `المتبقي: ${d.remaining} دج\nكم تريد التسديد؟`, "3000", (pay) => { let amt = Number(pay); if(amt > 0 && amt <= d.remaining) { d.remaining -= amt; if(d.remaining === 0) d.status = 'paid'; saveToFirebase(); renderDebtList(); } else showMsg("عفواً", "القيمة غير صحيحة", "error"); }); }
+    window.deleteDebt = (t, i) => { showConfirm("حذف السجل", "هل تريد الحذف نهائياً؟", () => { appData.debts[t].splice(i, 1); saveToFirebase(); renderDebtList(); }); }
+    window.openSettingsModal = () => { const l = document.getElementById('empsList'); l.innerHTML = ""; document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || ""; document.getElementById('inputDesigner').value = appData.designerName || ""; document.getElementById('inputPhone').value = appData.designerPhone || ""; document.getElementById('pinToggle').checked = appData.pinEnabled !== false; if(appData.emps) appData.emps.forEach((e, i) => { l.innerHTML += `<div class="list-item"><span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️</span></span><span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`; }); document.getElementById('settingsModal').style.display = 'flex'; }
+    window.updateEmpRate = (i) => { let e = appData.emps[i]; showPrompt("تعديل الأجر", `الموظف: ${e.name}`, e.rate, (newRate) => { if(newRate && newRate > 0) { appData.emps[i].rate = Number(newRate); saveToFirebase(); openSettingsModal(); } }); }
+    window.togglePin = (checkbox) => { appData.pinEnabled = checkbox.checked; saveToFirebase(); showMsg("تم", appData.pinEnabled ? "تم تفعيل القفل" : "تم إلغاء القفل", "success"); }
     window.addEmployee = () => { let n = document.getElementById('newE').value, r = document.getElementById('newR').value; if(n && r) { appData.emps.push({ id: Date.now(), name: n, rate: Number(r) }); saveToFirebase(); document.getElementById('newE').value = ""; openSettingsModal(); } }
-    window.deleteEmp = (i) => { if(confirm("حذف؟")) { appData.emps.splice(i, 1); saveToFirebase(); openSettingsModal(); } }
-    window.saveCompanySettings = () => { appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); alert("تم حفظ الهوية!"); applyIdentity(); }
+    window.deleteEmp = (i) => { showConfirm("حذف موظف", "سيتم حذف بياناته. متأكد؟", () => { appData.emps.splice(i, 1); saveToFirebase(); openSettingsModal(); }); }
+    window.saveCompanySettings = () => { appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; appData.designerName = document.getElementById('inputDesigner').value; appData.designerPhone = document.getElementById('inputPhone').value; if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); showMsg("تم", "تم حفظ الإعدادات", "success"); applyIdentity(); }
     window.handleLogoUpload = (i) => { if(i.files && i.files[0]) { var r = new FileReader(); r.onload = (e) => window.tempLogo = e.target.result; r.readAsDataURL(i.files[0]); } }
-    window.updatePin = () => { let p = document.getElementById('p1').value; if(p.length === 4) { appData.pin = p; appData.pinEnabled = true; saveToFirebase(); alert("تم تحديث الرمز!"); document.getElementById('p1').value=""; document.getElementById('pinToggle').checked = true; } else { alert("يجب أن يكون الرمز 4 أرقام"); } }
+    window.updatePin = () => { let p = document.getElementById('p1').value; if(p.length === 4) { appData.pin = p; appData.pinEnabled = true; saveToFirebase(); showMsg("تم", "تم تحديث الرمز", "success"); document.getElementById('p1').value=""; document.getElementById('pinToggle').checked = true; } else { showMsg("عفواً", "يجب أن يكون الرمز 4 أرقام", "error"); } }
     window.closeM = (id) => document.getElementById(id).style.display = 'none';
     function updateWASelect() { let s = document.getElementById('waEmpSelect'); s.innerHTML = '<option value="">-- اختر الموظف --</option>'; if(appData.emps) appData.emps.forEach(e => s.innerHTML += `<option value="${e.id}">${e.name}</option>`); }
-    window.sendWAReport = () => { let eid = document.getElementById('waEmpSelect').value; if(!eid) return alert("اختر الموظف!"); let e = appData.emps.find(x => x.id == eid), days = 0, mk = `${currDate.getFullYear()}-${currDate.getMonth()}`, dim = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate(); let totalMins = 0; for(let d=1; d<=dim; d++) { let r = appData.att[`${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${eid}`]; if(r && r.status === 'full') { days++; let mins = r.workMins || (r.tIn && r.tOut ? calcDuration(r.tIn, r.tOut) : 480); totalMins += mins; } } let totalHoursStr = minsToTime(totalMins); let advList = appData.advances[mk] && appData.advances[mk][eid] ? appData.advances[mk][eid] : []; let adv = advList.reduce((acc, item) => acc + (item.val || item), 0); let sal = days * e.rate; let msg = `*كشف: ${e.name}*\n🗓️ ${document.getElementById('monthLabel').innerText}\n✅ أيام العمل: ${days}\n⏱ الساعات: ${totalHoursStr}\n💵 مستحق: ${sal} دج\n💸 سحب: ${adv} دج\n💰 *صافي: ${sal - adv} دج*`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank'); }
+    window.sendWAReport = () => { let eid = document.getElementById('waEmpSelect').value; if(!eid) return showMsg("تنبيه", "يرجى اختيار الموظف", "info"); let e = appData.emps.find(x => x.id == eid), days = 0, mk = `${currDate.getFullYear()}-${currDate.getMonth()}`, dim = new Date(currDate.getFullYear(), currDate.getMonth()+1, 0).getDate(); let totalMins = 0; for(let d=1; d<=dim; d++) { let r = appData.att[`${currDate.getFullYear()}-${currDate.getMonth()}-${d}-${eid}`]; if(r && r.status === 'full') { days++; let mins = r.workMins || (r.tIn && r.tOut ? calcDuration(r.tIn, r.tOut) : 480); totalMins += mins; } } let totalHoursStr = minsToTime(totalMins); let advList = appData.advances[mk] && appData.advances[mk][eid] ? appData.advances[mk][eid] : []; let adv = advList.reduce((acc, item) => acc + (item.val || item), 0); let sal = days * e.rate; let msg = `*كشف: ${e.name}*\n🗓️ ${document.getElementById('monthLabel').innerText}\n✅ أيام العمل: ${days}\n⏱ الساعات: ${totalHoursStr}\n💵 مستحق: ${sal} دج\n💸 سحب: ${adv} دج\n💰 *صافي: ${sal - adv} دج*`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank'); }
 </script>
 </body>
 </html>
