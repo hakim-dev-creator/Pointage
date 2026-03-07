@@ -462,11 +462,26 @@
 <div id="attModal" class="modal"><div class="modal-content"><div class="modal-indicator"></div><div class="modal-header"><h3 id="attEmpName" class="modal-title">تسجيل الحضور</h3></div><div style="background:#F8FAFC; padding:15px; border-radius:12px; margin-bottom:20px;"><label style="font-size:0.85rem; font-weight:600">وقت الحضور</label><div style="display:flex; gap:10px; margin-bottom:12px"><input type="time" id="tIn" value="08:00" style="margin:0"><button class="btn btn-warning btn-sm" onclick="setSmartNow('tIn')">الآن</button></div><label style="font-size:0.85rem; font-weight:600">وقت الانصراف</label><div style="display:flex; gap:10px"><input type="time" id="tOut" value="16:00" style="margin:0"><button class="btn btn-warning btn-sm" onclick="setSmartNow('tOut')">الآن</button></div></div><button class="btn btn-success" onclick="saveAtt('full')" style="margin-bottom:8px">✅ حفظ الدوام</button><button class="btn btn-danger" onclick="saveAtt('absent')" style="margin-bottom:8px">❌ تسجيل غياب</button><button class="btn btn-ghost" onclick="closeM('attModal')">إغلاق</button></div></div>
 <div id="advModal" class="modal"><div class="modal-content"><div class="modal-indicator"></div><div class="modal-header"><h3 class="modal-title">💰 التسبيقات</h3></div><div id="advListArea" style="max-height:400px; overflow-y:auto; padding-bottom:20px;"></div><button class="btn btn-ghost" onclick="closeM('advModal')">إغلاق</button></div></div>
 <div id="debtModal" class="modal"><div class="modal-content"><div class="modal-indicator"></div><div class="modal-header"><h3 class="modal-title">📒 إدارة الديون</h3></div><div class="debt-tabs"><div id="tabIn" class="debt-tab active" onclick="switchDebtTab('in')">📥 ديون للتحصيل</div><div id="tabOut" class="debt-tab" onclick="switchDebtTab('out')">📤 ديون للتسديد</div></div><div style="background:#F8FAFC; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border)"><input id="debtName" placeholder="اسم المدين/الدائن" style="margin-top:0"><div style="display:flex; gap:10px"><input id="debtVal" type="number" placeholder="المبلغ" style="margin:0"><button class="btn btn-debt" onclick="addDebt()" style="width:auto; padding:0 15px; font-size:1.2rem">+</button></div><div style="font-size:0.7rem; color:var(--text-sub); text-align:center; margin-top:5px">🕒 التسجيل بالتوقيت الحالي تلقائياً</div></div><div id="debtListIn" style="max-height:300px; overflow-y:auto; display:none;"></div><div id="debtListOut" style="max-height:300px; overflow-y:auto; display:none;"></div><button class="btn btn-ghost" onclick="closeM('debtModal')" style="margin-top:10px">إغلاق</button></div></div>
-<div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-indicator"></div><div class="modal-header"><h3 class="modal-title">⚙️ الإعدادات</h3></div><div class="card" style="padding:15px; margin-bottom:15px"><h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.95rem">🏢 هوية المؤسسة</h4><input id="inputCompName" placeholder="الاسم بالعربية"><input id="inputCompNameFr" placeholder="الاسم بالفرنسية"><label style="font-size:0.8rem; margin-bottom:5px; display:block">الشعار:</label><input type="file" id="inputLogo" accept="image/*" onchange="handleLogoUpload(this)"><h4 style="margin:12px 0 8px 0; color:var(--text-sub); font-size:0.9rem">🎨 حقوق المصمم (Footer)</h4><input id="inputDesigner" placeholder="اسم المصمم"><input id="inputPhone" placeholder="رقم الهاتف"><button class="btn btn-primary btn-sm" onclick="saveCompanySettings()">حفظ</button></div><h4 style="margin-bottom:10px; font-size:0.95rem">👥 الموظفين</h4><div id="empsList" style="max-height:180px; overflow-y:auto; margin-bottom:15px"></div><div style="display:flex; gap:8px; margin-bottom:10px"><input id="newE" placeholder="الاسم" style="margin:0"><input id="newR" type="number" placeholder="الأجر" style="width:70px; margin:0"></div><button class="btn btn-success" onclick="addEmployee()">➕ إضافة</button><hr style="border-top:1px solid var(--border); margin:15px 0"><div style="background:#fff; padding:12px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-weight:700; font-size:0.9rem">🔐 تفعيل الرمز السري</span><label class="switch"><input type="checkbox" id="pinToggle" onchange="togglePin(this)"><span class="slider"></span></label></div><div style="display:flex; gap:8px"><input type="password" id="p1" maxlength="4" placeholder="رمز جديد" style="margin:0"><button class="btn btn-primary btn-sm" onclick="updatePin()">تحديث</button></div><button class="btn btn-ghost" onclick="closeM('settingsModal')" style="margin-top:15px">إغلاق</button></div></div>
+<div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-indicator"></div><div class="modal-header"><h3 class="modal-title">⚙️ الإعدادات</h3></div><div class="card" style="padding:15px; margin-bottom:15px"><h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.95rem">🏢 هوية المؤسسة</h4><input id="inputCompName" placeholder="الاسم بالعربية"><input id="inputCompNameFr" placeholder="الاسم بالفرنسية"><label style="font-size:0.8rem; margin-bottom:5px; display:block">الشعار:</label><input type="file" id="inputLogo" accept="image/*" onchange="handleLogoUpload(this)"><h4 style="margin:12px 0 8px 0; color:var(--text-sub); font-size:0.9rem">🎨 حقوق المصمم (Footer)</h4><input id="inputDesigner" placeholder="اسم المصمم"><input id="inputPhone" placeholder="رقم الهاتف"><button class="btn btn-primary btn-sm" onclick="saveCompanySettings()">حفظ</button></div><h4 style="margin-bottom:10px; font-size:0.95rem">👥 الموظفين</h4><div id="empsList" style="max-height:180px; overflow-y:auto; margin-bottom:15px"></div><div style="display:flex; gap:8px; margin-bottom:10px"><input id="newE" placeholder="الاسم" style="margin:0"><input id="newR" type="number" placeholder="الأجر" style="width:70px; margin:0"></div><button class="btn btn-success" onclick="addEmployee()">➕ إضافة</button><hr style="border-top:1px solid var(--border); margin:15px 0"><div style="background:#fff; padding:12px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-weight:700; font-size:0.9rem">🔐 تفعيل الرمز السري</span><label class="switch"><input type="checkbox" id="pinToggle" onchange="togglePin(this)"><span class="slider"></span></label></div><div style="display:flex; gap:8px"><input type="password" id="p1" maxlength="4" placeholder="رمز جديد (4 أرقام)" style="margin:0"><button class="btn btn-primary btn-sm" onclick="updatePin()">تحديث</button></div>
+<hr style="border-top:1px solid var(--border); margin:15px 0">
+<div style="background:#FFF7ED; padding:12px; border-radius:12px; border:1px solid #FED7AA; margin-bottom:8px;">
+  <h4 style="margin:0 0 8px 0; color:#C2410C; font-size:0.9rem">🔑 الماستر كود الخاص</h4>
+  <p style="font-size:0.75rem; color:#92400E; margin:0 0 10px 0;">يُستخدم لاستعادة الرمز السري عند نسيانه (8 أرقام)</p>
+  <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+    <span style="font-size:0.8rem; color:#64748B;">الماستر الحالي:</span>
+    <span id="currentMasterDisplay" style="font-family:monospace; font-weight:800; color:#C2410C; background:#FEF3C7; padding:2px 8px; border-radius:6px;">••••••••</span>
+    <button onclick="toggleShowMaster()" id="showMasterBtn" style="background:none; border:none; cursor:pointer; font-size:1rem;">👁️</button>
+  </div>
+  <div style="display:flex; gap:8px">
+    <input type="password" id="newMasterInput" maxlength="8" placeholder="ماستر كود جديد (8 أرقام)" style="margin:0" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    <button class="btn btn-sm" style="background:#C2410C; color:white; width:auto; padding:0 12px;" onclick="updateMasterCode()">حفظ</button>
+  </div>
+</div>
+<button class="btn btn-ghost" onclick="closeM('settingsModal')" style="margin-top:15px">إغلاق</button></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence, clearIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
@@ -593,7 +608,7 @@ const firebaseConfig = {
             img.style.cssText = 'width:28px;height:28px;border-radius:50%;object-fit:cover;';
             document.getElementById('userAvatar').replaceWith(img);
         }
-        if(!firestoreStarted) { firestoreStarted = true; startFirestore(); }
+        if(!firestoreStarted) { firestoreStarted = true; startFirestore(user); }
     }
 
     window.doLogin = async () => {
@@ -652,6 +667,8 @@ const firebaseConfig = {
         try {
             await signOut(auth);
             firestoreStarted = false;
+            // مسح كاش Firestore لمنع تسرب بيانات المستخدم السابق
+            try { await clearIndexedDbPersistence(db); } catch(e2) { console.log("Cache clear:", e2); }
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('userBadge').style.display = 'none';
             document.getElementById('contentArea').style.display = 'none';
@@ -684,11 +701,12 @@ const firebaseConfig = {
     document.getElementById('registerBtn').addEventListener('click', () => window.doRegister());
     document.getElementById('toggleRegPassBtn').addEventListener('click', () => window.toggleRegPassVisibility());
     document.getElementById('registerPassword2').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doRegister(); });
-    function startFirestore() {
+    function startFirestore(currentUser) {
     try { enableIndexedDbPersistence(db).catch((err) => { console.log("Persistence error", err); }); } catch(e) {}
-    const mainDocRef = doc(db, "salary_system", "main_data");
+    // كل مستخدم له مستنده الخاص باستخدام uid
+    const mainDocRef = doc(db, "users_data", currentUser.uid);
 
-    let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000", pinEnabled: true, designerName: "Ahmed Tech", designerPhone: "" };
+    let appData = { emps: [], att: {}, advances: {}, debts: { in: [], out: [] }, companyName: "نظام الرواتب", companyNameFr: "Online System", logo: null, pin: "0000", pinEnabled: true, masterCode: "10031945", designerName: "Ahmed Tech", designerPhone: "" };
     let currDate = new Date();
     let sel = null;
     let pinIn = "";
@@ -704,10 +722,10 @@ const firebaseConfig = {
         const el = document.getElementById('connStatus');
         el.className = "status-badge"; el.style.background = ""; el.style.color = "";
         if(!navigator.onLine || state === "offline") { el.innerText = "محفوظ في الهاتف 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; el.style.border = "1px solid #FED7AA"; return; }
-        if(state === "server") { el.innerText = "تم الرفع للسيرفر ☁️"; el.style.background = "#D1FAE5"; el.style.color = "#065F46"; } 
+        if(state === "server") { el.innerText = "تم الرفع للسحابة ☁️"; el.style.background = "#D1FAE5"; el.style.color = "#065F46"; } 
         else if(state === "cache") { el.innerText = "بالانتظار 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; } 
         else if(state === "sync") { el.innerText = "جاري الرفع... ⏳"; el.style.background = "#FEF3C7"; el.style.color = "#92400E"; } 
-        else { el.innerText = "خطأ ❌"; el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; }
+        else { el.innerText = "خطأ في الاتصال ❌"; el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; el.style.border = "1px solid #FECACA"; }
     }
     window.addEventListener('online',  () => updateStatus("sync"));
     window.addEventListener('offline', () => updateStatus("offline"));
@@ -791,7 +809,7 @@ const firebaseConfig = {
     window.clearMaster = () => { masterIn = ""; makeDots('masterDotsContainer', 8, 0); };
 
     function checkMaster() {
-        if(masterIn === MASTER_CODE) {
+        if(masterIn === (appData.masterCode || MASTER_CODE)) {
             // الانتقال لإنشاء رمز جديد
             document.getElementById('pinMasterView').style.display = 'none';
             document.getElementById('pinNewView').style.display = 'block';
@@ -896,7 +914,18 @@ const firebaseConfig = {
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
             if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
         } else { saveToFirebase(); }
-    }, (err) => { document.getElementById('loader').style.display = 'none'; updateStatus("error"); console.error("Firestore error:", err); });
+    }, (err) => {
+        document.getElementById('loader').style.display = 'none';
+        updateStatus("error");
+        console.error("Firestore error:", err.code, err.message);
+        // إذا كان الخطأ permission-denied فهذا يعني مشكلة في قواعد Firestore
+        if(err.code === 'permission-denied') {
+            updateStatus("error");
+            document.getElementById('connStatus').innerText = "خطأ في الصلاحيات ⛔";
+            document.getElementById('connStatus').style.background = "#FEE2E2";
+            document.getElementById('connStatus').style.color = "#991B1B";
+        }
+    });
 
     async function saveToFirebase() {
         if(navigator.onLine) updateStatus("sync");
@@ -961,14 +990,55 @@ const firebaseConfig = {
     function renderDebtList() { let list = appData.debts[currentDebtTab], container = document.getElementById(currentDebtTab === 'in' ? 'debtListIn' : 'debtListOut'); if(list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px; font-size:0.9rem'>لا توجد ديون</p>"; return; } container.innerHTML = list.map((d, i) => { let total = d.total || d.val || 0, remaining = d.remaining !== undefined ? d.remaining : total, isPaid = remaining <= 0; return `<div class="list-item" style="flex-direction:column; align-items:stretch"><div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:700; font-size:0.95rem">${d.name}</div><div style="font-size:0.7rem; color:#777">📅 ${d.dateStr||d.date||""}</div></div><div class="debt-amount ${isPaid ? 'debt-paid' : ''}">${remaining} دج</div></div>${!isPaid ? `<div style="display:flex; justify-content:space-between; margin-top:8px; align-items:center"><span style="font-size:0.75rem; color:#555">الأصل: ${total}</span><div style="display:flex; gap:8px"><button class="btn btn-success btn-sm" onclick="settleDebt('${currentDebtTab}', ${i})">تسديد</button><span style="color:var(--danger); cursor:pointer; align-self:center" onclick="deleteDebt('${currentDebtTab}', ${i})">🗑️</span></div></div>` : `<div style="text-align:left; margin-top:5px; color:var(--success); font-weight:700; font-size:0.85rem">✅ خالص <span style="font-size:0.75rem; color:var(--danger); cursor:pointer; margin-right:8px" onclick="deleteDebt('${currentDebtTab}', ${i})">حذف</span></div>`}</div>`; }).join(''); }
     window.settleDebt = (type, i) => { let d = appData.debts[type][i]; if(d.remaining === undefined) d.remaining = d.total || d.val; showPrompt("تسديد", `المتبقي: ${d.remaining} دج\nكم تريد التسديد؟`, "3000", (pay) => { let amt = Number(pay); if(amt > 0 && amt <= d.remaining) { d.remaining -= amt; if(d.remaining === 0) d.status = 'paid'; saveToFirebase(); renderDebtList(); } else showMsg("عفواً", "القيمة غير صحيحة", "error"); }); }
     window.deleteDebt = (t, i) => { showConfirm("حذف السجل", "هل تريد الحذف نهائياً؟", () => { appData.debts[t].splice(i, 1); saveToFirebase(); renderDebtList(); }); }
-    window.openSettingsModal = () => { const l = document.getElementById('empsList'); l.innerHTML = ""; document.getElementById('inputCompName').value = appData.companyName || ""; document.getElementById('inputCompNameFr').value = appData.companyNameFr || ""; document.getElementById('inputDesigner').value = appData.designerName || ""; document.getElementById('inputPhone').value = appData.designerPhone || ""; document.getElementById('pinToggle').checked = appData.pinEnabled !== false; if(appData.emps) appData.emps.forEach((e, i) => { l.innerHTML += `<div class="list-item"><span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️</span></span><span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`; }); document.getElementById('settingsModal').style.display = 'flex'; }
+    window.openSettingsModal = () => {
+    const l = document.getElementById('empsList'); l.innerHTML = "";
+    document.getElementById('inputCompName').value = appData.companyName || "";
+    document.getElementById('inputCompNameFr').value = appData.companyNameFr || "";
+    document.getElementById('inputDesigner').value = appData.designerName || "";
+    document.getElementById('inputPhone').value = appData.designerPhone || "";
+    document.getElementById('pinToggle').checked = appData.pinEnabled !== false;
+    // عرض الماستر كود (مخفي افتراضياً)
+    const mc = appData.masterCode || "10031945";
+    document.getElementById('currentMasterDisplay').innerText = '•'.repeat(mc.length);
+    document.getElementById('currentMasterDisplay').dataset.value = mc;
+    document.getElementById('newMasterInput').value = "";
+    if(appData.emps) appData.emps.forEach((e, i) => {
+        l.innerHTML += `<div class="list-item"><span><b>${e.name}</b> (${e.rate} دج) <span onclick="updateEmpRate(${i})" style="cursor:pointer; background:#EFF6FF; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:var(--primary)">✏️</span></span><span style="color:var(--danger); cursor:pointer" onclick="deleteEmp(${i})">🗑️</span></div>`;
+    });
+    document.getElementById('settingsModal').style.display = 'flex';
+}
     window.updateEmpRate = (i) => { let e = appData.emps[i]; showPrompt("تعديل الأجر", `الموظف: ${e.name}`, e.rate, (newRate) => { if(newRate && newRate > 0) { appData.emps[i].rate = Number(newRate); saveToFirebase(); openSettingsModal(); } }); }
     window.togglePin = (checkbox) => { appData.pinEnabled = checkbox.checked; saveToFirebase(); showMsg("تم", appData.pinEnabled ? "تم تفعيل القفل" : "تم إلغاء القفل", "success"); }
     window.addEmployee = () => { let n = document.getElementById('newE').value, r = document.getElementById('newR').value; if(n && r) { appData.emps.push({ id: Date.now(), name: n, rate: Number(r) }); saveToFirebase(); document.getElementById('newE').value = ""; openSettingsModal(); } }
     window.deleteEmp = (i) => { showConfirm("حذف موظف", "سيتم حذف بياناته. متأكد؟", () => { appData.emps.splice(i, 1); saveToFirebase(); openSettingsModal(); }); }
     window.saveCompanySettings = () => { appData.companyName = document.getElementById('inputCompName').value; appData.companyNameFr = document.getElementById('inputCompNameFr').value; appData.designerName = document.getElementById('inputDesigner').value; appData.designerPhone = document.getElementById('inputPhone').value; if(window.tempLogo) appData.logo = window.tempLogo; saveToFirebase(); showMsg("تم", "تم حفظ الإعدادات", "success"); applyIdentity(); }
     window.handleLogoUpload = (i) => { if(i.files && i.files[0]) { var r = new FileReader(); r.onload = (e) => window.tempLogo = e.target.result; r.readAsDataURL(i.files[0]); } }
-    window.updatePin = () => { let p = document.getElementById('p1').value; if(p.length === 4) { appData.pin = p; appData.pinEnabled = true; saveToFirebase(); showMsg("تم", "تم تحديث الرمز", "success"); document.getElementById('p1').value=""; document.getElementById('pinToggle').checked = true; } else { showMsg("عفواً", "يجب أن يكون الرمز 4 أرقام", "error"); } }
+    window.updatePin = () => {
+    let p = document.getElementById('p1').value;
+    if(p.length === 4) { appData.pin = p; appData.pinEnabled = true; saveToFirebase(); showMsg("تم", "تم تحديث الرمز السري", "success"); document.getElementById('p1').value=""; document.getElementById('pinToggle').checked = true; }
+    else { showMsg("عفواً", "يجب أن يكون الرمز 4 أرقام", "error"); }
+}
+window.toggleShowMaster = () => {
+    const el = document.getElementById('currentMasterDisplay');
+    const btn = document.getElementById('showMasterBtn');
+    const val = el.dataset.value || "";
+    if(el.innerText.includes('•')) { el.innerText = val; btn.innerText = '🙈'; }
+    else { el.innerText = '•'.repeat(val.length); btn.innerText = '👁️'; }
+}
+window.updateMasterCode = () => {
+    const inp = document.getElementById('newMasterInput');
+    const val = inp.value.trim();
+    if(val.length !== 8 || !/^[0-9]{8}$/.test(val)) {
+        showMsg("خطأ", "يجب أن يكون الماستر كود 8 أرقام بالضبط", "error"); return;
+    }
+    showConfirm("تغيير الماستر كود", `هل أنت متأكد من تغيير الماستر كود إلى: ${val}؟`, () => {
+        appData.masterCode = val;
+        saveToFirebase();
+        showMsg("تم ✅", "تم تحديث الماستر كود بنجاح", "success");
+        inp.value = "";
+        openSettingsModal();
+    });
+}
     window.closeM = (id) => document.getElementById(id).style.display = 'none';
     
     // ✅ وظيفة تحديث القوائم المنسدلة ✅
