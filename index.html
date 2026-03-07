@@ -114,11 +114,158 @@
         .btn-confirm { background: var(--primary); color: white; }
         .btn-cancel { background: #F1F5F9; color: var(--text-main); }
         .btn-delete { background: var(--danger); color: white; }
+
+        /* ===== LOGIN SCREEN STYLES ===== */
+        #loginScreen {
+            display: flex; position: fixed; inset: 0; z-index: 6000;
+            background: linear-gradient(135deg, #1a3a6e 0%, #2563EB 50%, #1d4ed8 100%);
+            align-items: center; justify-content: center; flex-direction: column;
+            padding: 20px;
+        }
+        .login-card {
+            background: white; border-radius: 24px; padding: 32px 28px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: loginSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes loginSlideUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+        .login-logo-area { text-align: center; margin-bottom: 24px; }
+        .login-logo-icon {
+            width: 70px; height: 70px; background: linear-gradient(135deg, #2563EB, #1d4ed8);
+            border-radius: 20px; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+        }
+        .login-title { font-size: 1.5rem; font-weight: 800; color: #1E293B; margin: 0 0 4px; }
+        .login-subtitle { font-size: 0.85rem; color: #64748B; margin: 0; }
+        .login-divider { display: flex; align-items: center; gap: 10px; margin: 18px 0; color: #94A3B8; font-size: 0.8rem; }
+        .login-divider::before, .login-divider::after { content:''; flex:1; height:1px; background:#E2E8F0; }
+        .btn-google {
+            width: 100%; padding: 13px; border: 2px solid #E2E8F0; border-radius: 12px;
+            background: white; font-family: 'Tajawal', sans-serif; font-size: 0.95rem; font-weight: 700;
+            color: #1E293B; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 10px; transition: all 0.2s; margin-bottom: 0;
+        }
+        .btn-google:hover { background: #F8FAFC; border-color: #CBD5E1; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .btn-google:active { transform: scale(0.98); }
+        .google-icon { width: 20px; height: 20px; }
+        .login-input-group { margin-bottom: 14px; position: relative; }
+        .login-input-label { font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px; }
+        .login-input {
+            width: 100%; padding: 13px 16px; border: 2px solid #E2E8F0; border-radius: 12px;
+            font-family: 'Tajawal', sans-serif; font-size: 0.95rem; color: #1E293B;
+            background: #F8FAFC; transition: 0.2s; outline: none; margin: 0;
+        }
+        .login-input:focus { border-color: #2563EB; background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .login-input.error { border-color: #EF4444; background: #FEF2F2; }
+        .password-wrapper { position: relative; }
+        .toggle-pass { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #94A3B8; padding: 0; }
+        .btn-login {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #2563EB, #1d4ed8); color: white;
+            font-family: 'Tajawal', sans-serif; font-size: 1rem; font-weight: 800;
+            cursor: pointer; transition: all 0.2s; margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+        }
+        .btn-login:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.5); }
+        .btn-login:active { transform: scale(0.98); }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .forgot-link { text-align: center; margin-top: 14px; }
+        .forgot-link a { color: #2563EB; text-decoration: none; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+        .forgot-link a:hover { text-decoration: underline; }
+        .login-error-msg { background: #FEE2E2; color: #991B1B; border-radius: 10px; padding: 10px 14px; font-size: 0.85rem; margin-top: 12px; display: none; text-align: center; border: 1px solid #FECACA; }
+        .login-success-msg { background: #D1FAE5; color: #065F46; border-radius: 10px; padding: 10px 14px; font-size: 0.85rem; margin-top: 12px; display: none; text-align: center; border: 1px solid #A7F3D0; }
+        .login-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Recovery screen */
+        #recoveryView { display: none; }
+        #loginView { display: block; }
+        .back-btn { background: none; border: none; color: #2563EB; font-family: 'Tajawal', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-bottom: 16px; padding: 0; }
+        .back-btn:hover { text-decoration: underline; }
+        .user-badge {
+            position: fixed; top: 10px; left: 10px; z-index: 200;
+            background: white; border-radius: 50px; padding: 6px 14px 6px 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: none; align-items: center; gap: 8px;
+            font-size: 0.8rem; font-weight: 700; color: #1E293B; border: 1px solid #E2E8F0;
+        }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: #2563EB; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+        .logout-btn { background: none; border: none; color: #EF4444; font-size: 0.8rem; cursor: pointer; font-family: 'Tajawal', sans-serif; font-weight: 700; padding: 0; }
     </style>
 </head>
 <body>
 
-<div id="loader">
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo-area">
+            <div class="login-logo-icon">💼</div>
+            <h2 class="login-title">نظام الرواتب</h2>
+            <p class="login-subtitle">سجّل دخولك للمتابعة</p>
+        </div>
+
+        <!-- زر الدخول عبر Google -->
+        <button class="btn-google" id="googleSignInBtn">
+            <svg class="google-icon" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            الدخول عبر حساب Google
+        </button>
+
+        <div class="login-divider">أو بالبريد الإلكتروني</div>
+
+        <!-- نموذج الدخول -->
+        <div id="loginView">
+            <div class="login-input-group">
+                <label class="login-input-label">البريد الإلكتروني (Gmail)</label>
+                <input type="email" id="loginEmail" class="login-input" placeholder="example@gmail.com" dir="ltr">
+            </div>
+            <div class="login-input-group">
+                <label class="login-input-label">كلمة المرور</label>
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" class="login-input" placeholder="••••••••" dir="ltr">
+                    <button class="toggle-pass" id="togglePassBtn">👁️</button>
+                </div>
+            </div>
+
+            <button class="btn-login" id="loginBtn">دخول</button>
+
+            <div class="forgot-link">
+                <a id="forgotLink" style="cursor:pointer">🔑 نسيت كلمة المرور؟</a>
+            </div>
+
+            <div id="loginErrorMsg" class="login-error-msg"></div>
+        </div>
+
+        <!-- نموذج استعادة كلمة المرور -->
+        <div id="recoveryView">
+            <button class="back-btn" id="backToLoginBtn">➡ العودة لتسجيل الدخول</button>
+            <div class="login-logo-area" style="margin-bottom:16px">
+                <div style="font-size:2.5rem; margin-bottom:8px">🔑</div>
+                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#1E293B">استعادة كلمة المرور</h3>
+                <p style="margin:4px 0 0; font-size:0.82rem; color:#64748B">أدخل بريدك الإلكتروني وسنرسل لك رابط الاستعادة</p>
+            </div>
+            <div class="login-input-group">
+                <label class="login-input-label">البريد الإلكتروني</label>
+                <input type="email" id="recoveryEmail" class="login-input" placeholder="example@gmail.com" dir="ltr">
+            </div>
+            <button class="btn-login" id="resetBtn">إرسال رابط الاستعادة 📧</button>
+            <div id="recoveryErrorMsg" class="login-error-msg"></div>
+            <div id="recoverySuccessMsg" class="login-success-msg"></div>
+        </div>
+    </div>
+</div>
+
+<!-- شارة المستخدم المسجّل -->
+<div class="user-badge" id="userBadge">
+    <div class="user-avatar" id="userAvatar">؟</div>
+    <span id="userDisplayName">مستخدم</span>
+    <button class="logout-btn" id="logoutBtn">خروج</button>
+</div>
+
+<div id="loader" style="display:none">
     <div class="spinner"></div>
     <p style="margin-top:15px; font-weight:700; color:var(--text-sub); font-size:0.9rem">جاري الاتصال...</p>
     <div id="errorMsg" style="color:var(--danger); display:none"></div>
@@ -224,6 +371,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
     authDomain: "pointage-af939.firebaseapp.com",
@@ -242,6 +390,156 @@ const firebaseConfig = {
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+    // ===== AUTH HELPER FUNCTIONS =====
+    const getArabicError = (code) => {
+        const errors = {
+            'auth/user-not-found': 'البريد الإلكتروني غير مسجّل',
+            'auth/wrong-password': 'كلمة المرور غير صحيحة',
+            'auth/invalid-email': 'صيغة البريد الإلكتروني غير صحيحة',
+            'auth/invalid-credential': 'البريد أو كلمة المرور غير صحيحة',
+            'auth/too-many-requests': 'تم تعطيل الحساب مؤقتاً. حاول لاحقاً أو أعد تعيين كلمة المرور',
+            'auth/network-request-failed': 'تحقق من اتصالك بالإنترنت',
+            'auth/popup-closed-by-user': 'تم إغلاق نافذة Google. حاول مجدداً',
+            'auth/popup-blocked': 'تم حجب النافذة المنبثقة. يرجى السماح بها في المتصفح',
+        };
+        return errors[code] || 'حدث خطأ، حاول مجدداً';
+    };
+
+    window.showRecovery = () => {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('recoveryView').style.display = 'block';
+        document.getElementById('recoveryEmail').value = document.getElementById('loginEmail').value;
+        document.getElementById('recoveryErrorMsg').style.display = 'none';
+        document.getElementById('recoverySuccessMsg').style.display = 'none';
+    };
+    window.showLogin = () => {
+        document.getElementById('loginView').style.display = 'block';
+        document.getElementById('recoveryView').style.display = 'none';
+        document.getElementById('loginErrorMsg').style.display = 'none';
+    };
+    window.togglePasswordVisibility = () => {
+        const inp = document.getElementById('loginPassword');
+        const btn = document.getElementById('togglePassBtn');
+        if(inp.type === 'password') { inp.type = 'text'; btn.innerText = '🙈'; }
+        else { inp.type = 'password'; btn.innerText = '👁️'; }
+    };
+
+    function setLoginLoading(loading) {
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = loading;
+        btn.innerHTML = loading ? '<span class="login-spinner"></span>' : 'دخول';
+    }
+    function setResetLoading(loading) {
+        const btn = document.getElementById('resetBtn');
+        btn.disabled = loading;
+        btn.innerHTML = loading ? '<span class="login-spinner"></span>' : 'إرسال رابط الاستعادة 📧';
+    }
+
+    let firestoreStarted = false;
+    function onLoginSuccess(user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('loader').style.display = 'flex';
+        const name = user.displayName || user.email.split('@')[0];
+        const badge = document.getElementById('userBadge');
+        badge.style.display = 'flex';
+        document.getElementById('userDisplayName').innerText = name;
+        document.getElementById('userAvatar').innerText = name.charAt(0).toUpperCase();
+        if(user.photoURL) {
+            const img = document.createElement('img');
+            img.src = user.photoURL;
+            img.style.cssText = 'width:28px;height:28px;border-radius:50%;object-fit:cover;';
+            document.getElementById('userAvatar').replaceWith(img);
+        }
+        if(!firestoreStarted) { firestoreStarted = true; startFirestore(); }
+    }
+
+    window.doLogin = async () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const errEl = document.getElementById('loginErrorMsg');
+        errEl.style.display = 'none';
+        if(!email) { errEl.innerText = '⚠️ أدخل بريدك الإلكتروني'; errEl.style.display = 'block'; return; }
+        if(!password) { errEl.innerText = '⚠️ أدخل كلمة المرور'; errEl.style.display = 'block'; return; }
+        setLoginLoading(true);
+        try {
+            const cred = await signInWithEmailAndPassword(auth, email, password);
+            onLoginSuccess(cred.user);
+        } catch(e) {
+            errEl.innerText = '❌ ' + getArabicError(e.code);
+            errEl.style.display = 'block';
+        }
+        setLoginLoading(false);
+    };
+
+    window.signInWithGoogle = async () => {
+        const btn = document.getElementById('googleSignInBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="login-spinner" style="border-top-color:#4285F4;border-color:rgba(0,0,0,0.1)"></span> جارٍ الاتصال بـ Google...';
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            onLoginSuccess(result.user);
+        } catch(e) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> الدخول عبر حساب Google`;
+            const errEl = document.getElementById('loginErrorMsg');
+            errEl.innerText = '❌ ' + getArabicError(e.code);
+            errEl.style.display = 'block';
+        }
+    };
+
+    window.doResetPassword = async () => {
+        const email = document.getElementById('recoveryEmail').value.trim();
+        const errEl = document.getElementById('recoveryErrorMsg');
+        const sucEl = document.getElementById('recoverySuccessMsg');
+        errEl.style.display = 'none'; sucEl.style.display = 'none';
+        if(!email) { errEl.innerText = '⚠️ أدخل بريدك الإلكتروني أولاً'; errEl.style.display = 'block'; return; }
+        setResetLoading(true);
+        try {
+            await sendPasswordResetEmail(auth, email);
+            sucEl.innerText = '✅ تم إرسال رابط الاستعادة! تفقّد بريدك الإلكتروني (وملف الرسائل غير المرغوب فيها)';
+            sucEl.style.display = 'block';
+        } catch(e) {
+            errEl.innerText = '❌ ' + getArabicError(e.code);
+            errEl.style.display = 'block';
+        }
+        setResetLoading(false);
+    };
+
+    window.doLogout = async () => {
+        try {
+            await signOut(auth);
+            firestoreStarted = false;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('userBadge').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'none';
+            document.getElementById('pinModal').style.display = 'none';
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginErrorMsg').style.display = 'none';
+            window.showLogin();
+        } catch(e) { console.error(e); }
+    };
+
+    // Check if already logged in
+    onAuthStateChanged(auth, (user) => {
+        if(user) onLoginSuccess(user);
+    });
+
+    // ===== BIND ALL LOGIN BUTTON EVENTS =====
+    document.getElementById('googleSignInBtn').addEventListener('click', () => window.signInWithGoogle());
+    document.getElementById('loginBtn').addEventListener('click', () => window.doLogin());
+    document.getElementById('togglePassBtn').addEventListener('click', () => window.togglePasswordVisibility());
+    document.getElementById('forgotLink').addEventListener('click', () => window.showRecovery());
+    document.getElementById('backToLoginBtn').addEventListener('click', () => window.showLogin());
+    document.getElementById('resetBtn').addEventListener('click', () => window.doResetPassword());
+    document.getElementById('logoutBtn').addEventListener('click', () => window.doLogout());
+    document.getElementById('loginPassword').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doLogin(); });
+    document.getElementById('recoveryEmail').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doResetPassword(); });
+    function startFirestore() {
     try { enableIndexedDbPersistence(db).catch((err) => { console.log("Persistence error", err); }); } catch(e) {}
     const mainDocRef = doc(db, "salary_system", "main_data");
 
@@ -299,7 +597,7 @@ const firebaseConfig = {
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
             if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
         } else { saveToFirebase(); }
-    }, (e) => { document.getElementById('loader').style.display = 'none'; updateStatus("error"); });
+    }, (err) => { document.getElementById('loader').style.display = 'none'; updateStatus("error"); console.error("Firestore error:", err); });
 
     async function saveToFirebase() {
         if(navigator.onLine) updateStatus("sync");
@@ -461,6 +759,7 @@ const firebaseConfig = {
         
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     }
+    } // end startFirestore
 </script>
 </body>
 </html>
