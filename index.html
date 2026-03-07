@@ -509,7 +509,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
@@ -530,6 +530,8 @@ const firebaseConfig = {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    // تفعيل الكاش المحلي مرة واحدة فقط عند بدء التطبيق
+    try { enableIndexedDbPersistence(db).catch(e => console.log("Persistence:", e.code)); } catch(e) {}
     const googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: 'select_account' });
 
@@ -629,9 +631,18 @@ const firebaseConfig = {
         // timeout: إذا مرت 10 ثوانٍ بدون استجابة أظهر زر إعادة المحاولة
         setTimeout(() => {
             if(document.getElementById('loader').style.display !== 'none') {
-                document.getElementById('loaderRetryBtn').style.display = 'block';
+                const btn = document.getElementById('loaderRetryBtn');
+                btn.style.display = 'block';
+                btn.innerHTML = '🚪 خروج للدخول بحساب آخر';
+                btn.onclick = () => { window.doLogout(); };
+                // زر ثانٍ لإعادة التحميل
+                const reloadBtn = document.createElement('button');
+                reloadBtn.innerText = '🔄 إعادة المحاولة';
+                reloadBtn.style.cssText = 'margin-top:8px; background:#64748B; color:white; border:none; border-radius:10px; padding:10px 20px; font-family:Tajawal,sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; display:block; width:100%;';
+                reloadBtn.onclick = () => location.reload();
+                document.getElementById('loader').appendChild(reloadBtn);
             }
-        }, 10000);
+        }, 8000);
         const name = user.displayName || user.email.split('@')[0];
         const badge = document.getElementById('userBadge');
         badge.style.display = 'flex';
@@ -735,7 +746,6 @@ const firebaseConfig = {
     document.getElementById('toggleRegPassBtn').addEventListener('click', () => window.toggleRegPassVisibility());
     document.getElementById('registerPassword2').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doRegister(); });
     function startFirestore(currentUser) {
-    try { enableIndexedDbPersistence(db).catch((err) => { console.log("Persistence error", err); }); } catch(e) {}
     // كل مستخدم له مستنده الخاص باستخدام uid
     const mainDocRef = doc(db, "users_data", currentUser.uid);
 
@@ -934,29 +944,23 @@ const firebaseConfig = {
     }
     setupDots(4);
 
-    onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
+    // دالة مركزية لمعالجة بيانات Firestore
+    function handleDocSnap(docSnap, fromLive) {
         document.getElementById('loader').style.display = 'none';
-        // المؤشر الحقيقي: هل البيانات من السحابة أم من الكاش؟
-        const fromCache = docSnap.metadata.fromCache;
-        const hasPendingWrites = docSnap.metadata.hasPendingWrites;
-        if(hasPendingWrites) {
-            updateConnDot("sync"); // جارٍ الرفع
-        } else if(fromCache) {
-            updateConnDot("cache"); // بيانات محلية
-        } else {
-            updateConnDot("server"); // بيانات حقيقية من السحابة ✅
+        if(fromLive) {
+            const fromCache = docSnap.metadata.fromCache;
+            const hasPendingWrites = docSnap.metadata.hasPendingWrites;
+            if(hasPendingWrites) updateConnDot("sync");
+            else if(fromCache) updateConnDot("cache");
+            else updateConnDot("server");
         }
-        if (docSnap.exists()) {
+        if(docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
             if(appData.pinEnabled === undefined) appData.pinEnabled = true;
             if(appData.pinEnabled === false) {
-                // إذا كنا في وضع الماستر كود لا تفتح التطبيق
-                if(masterModeActive) {
-                    // لا تفعل شيئاً - انتظر إدخال الماستر كود
-                } else {
-                    unlockApp();
-                }
+                if(masterModeActive) { /* انتظر الماستر كود */ }
+                else { unlockApp(); }
             } else {
                 if(document.getElementById('contentArea').style.display === 'none') {
                     document.getElementById('pinModal').style.display = 'flex';
@@ -966,16 +970,32 @@ const firebaseConfig = {
             if(!appData.debts) appData.debts = { in: [], out: [] };
             applyIdentity(); renderCalendar(); updateAllSelects();
             if(document.getElementById('debtModal').style.display === 'flex') renderDebtList();
-            if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal(); 
+            if(document.getElementById('settingsModal').style.display === 'flex') window.openSettingsModal();
         } else { saveToFirebase(); }
-    }, (err) => {
-        document.getElementById('loader').style.display = 'none';
-        updateStatus("error");
-        console.error("Firestore error:", err.code, err.message);
-        // إذا كان الخطأ permission-denied فهذا يعني مشكلة في قواعد Firestore
-        if(err.code === 'permission-denied') {
-            updateStatus("error");
-            updateConnDot("error");
+    }
+
+    // محاولة onSnapshot أولاً، ثم getDoc كـ fallback
+    let snapshotFailed = false;
+    const unsubscribe = onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
+        snapshotFailed = false;
+        handleDocSnap(docSnap, true);
+    }, async (err) => {
+        console.error("onSnapshot error:", err.code, err.message);
+        snapshotFailed = true;
+        updateConnDot("error");
+        // Fallback: محاولة getDoc مباشرة
+        try {
+            const docSnap = await getDoc(mainDocRef);
+            handleDocSnap(docSnap, false);
+            updateConnDot("server");
+        } catch(e2) {
+            console.error("getDoc also failed:", e2.code);
+            document.getElementById('loader').style.display = 'none';
+            updateConnDot("offline");
+            // إظهار زر الخروج لتسجيل الدخول بحساب آخر
+            document.getElementById('loaderRetryBtn').style.display = 'block';
+            document.getElementById('loaderRetryBtn').innerText = '🚪 تسجيل خروج والمحاولة مجدداً';
+            document.getElementById('loaderRetryBtn').onclick = () => window.doLogout();
         }
     });
 
