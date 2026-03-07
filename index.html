@@ -847,11 +847,10 @@ const firebaseConfig = {
         }
     }
 
-    // ===== CLOSE PIN MODAL =====
+    // ===== CLOSE PIN MODAL (إغلاق النافذة فقط - لا دخول للتطبيق) =====
     window.closePinModal = () => {
         document.getElementById('pinModal').style.display = 'none';
-        document.getElementById('contentArea').style.display = 'block';
-        // إعادة تعيين الحالة
+        // إعادة تعيين الحالة فقط
         pinIn = ""; pinAttempts = 0;
         document.getElementById('attemptsMsg').style.display = 'none';
         document.getElementById('pinNormalView').style.display = 'block';
