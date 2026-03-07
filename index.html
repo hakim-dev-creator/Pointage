@@ -704,7 +704,7 @@ const firebaseConfig = {
         const el = document.getElementById('connStatus');
         el.className = "status-badge"; el.style.background = ""; el.style.color = "";
         if(!navigator.onLine || state === "offline") { el.innerText = "محفوظ في الهاتف 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; el.style.border = "1px solid #FED7AA"; return; }
-        if(state === "server") { el.innerText = "تم الرفع للسحابة ☁️"; el.style.background = "#D1FAE5"; el.style.color = "#065F46"; } 
+        if(state === "server") { el.innerText = "تم الرفع للسيرفر ☁️"; el.style.background = "#D1FAE5"; el.style.color = "#065F46"; } 
         else if(state === "cache") { el.innerText = "بالانتظار 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; } 
         else if(state === "sync") { el.innerText = "جاري الرفع... ⏳"; el.style.background = "#FEF3C7"; el.style.color = "#92400E"; } 
         else { el.innerText = "خطأ ❌"; el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; }
