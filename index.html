@@ -189,6 +189,12 @@
         }
         .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: #2563EB; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
         .logout-btn { background: none; border: none; color: #EF4444; font-size: 0.8rem; cursor: pointer; font-family: 'Tajawal', sans-serif; font-weight: 700; padding: 0; }
+        /* Register view */
+        .switch-view-link { text-align: center; margin-top: 16px; font-size: 0.88rem; color: #64748B; }
+        .switch-view-link a { color: #2563EB; font-weight: 700; cursor: pointer; text-decoration: none; }
+        .switch-view-link a:hover { text-decoration: underline; }
+        .register-success { background: #D1FAE5; color: #065F46; border-radius: 10px; padding: 12px 14px; font-size: 0.88rem; margin-top: 12px; display: none; text-align: center; border: 1px solid #A7F3D0; }
+
     </style>
 </head>
 <body>
@@ -237,6 +243,44 @@
             </div>
 
             <div id="loginErrorMsg" class="login-error-msg"></div>
+            <div class="switch-view-link">
+                لا تملك حساباً؟ <a id="goToRegisterLink">✨ إنشاء حساب جديد</a>
+            </div>
+        </div>
+
+        <!-- نموذج إنشاء حساب جديد -->
+        <div id="registerView" style="display:none">
+            <button class="back-btn" id="backFromRegisterBtn">➡ العودة لتسجيل الدخول</button>
+            <div class="login-logo-area" style="margin-bottom:16px">
+                <div style="font-size:2.5rem; margin-bottom:8px">✨</div>
+                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#1E293B">إنشاء حساب جديد</h3>
+                <p style="margin:4px 0 0; font-size:0.82rem; color:#64748B">أنشئ حسابك للوصول للنظام</p>
+            </div>
+            <div class="login-input-group">
+                <label class="login-input-label">الاسم الكامل</label>
+                <input type="text" id="registerName" class="login-input" placeholder="مثال: أحمد محمد">
+            </div>
+            <div class="login-input-group">
+                <label class="login-input-label">البريد الإلكتروني</label>
+                <input type="email" id="registerEmail" class="login-input" placeholder="example@gmail.com" dir="ltr">
+            </div>
+            <div class="login-input-group">
+                <label class="login-input-label">كلمة المرور</label>
+                <div class="password-wrapper">
+                    <input type="password" id="registerPassword" class="login-input" placeholder="6 أحرف على الأقل" dir="ltr">
+                    <button class="toggle-pass" id="toggleRegPassBtn">👁️</button>
+                </div>
+            </div>
+            <div class="login-input-group">
+                <label class="login-input-label">تأكيد كلمة المرور</label>
+                <input type="password" id="registerPassword2" class="login-input" placeholder="أعد كتابة كلمة المرور" dir="ltr">
+            </div>
+            <button class="btn-login" id="registerBtn" style="background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 15px rgba(16,185,129,0.4);">إنشاء الحساب ✨</button>
+            <div id="registerErrorMsg" class="login-error-msg"></div>
+            <div id="registerSuccessMsg" class="register-success"></div>
+            <div class="switch-view-link">
+                لديك حساب بالفعل؟ <a id="goToLoginFromRegister">تسجيل الدخول</a>
+            </div>
         </div>
 
         <!-- نموذج استعادة كلمة المرور -->
@@ -342,23 +386,75 @@
 </div>
 
 <div id="pinModal" class="modal" style="z-index:4000; align-items:center;">
-    <div class="modal-content" style="border-radius:24px; text-align:center;">
-        <h3 class="modal-title">🔒 رمز الدخول</h3>
-        <p style="color:var(--text-sub); margin-top:5px; font-size:0.9rem">أدخل الرمز للمتابعة</p>
-        <div id="dotsContainer" class="pin-container"></div>
-        <div class="pin-grid">
-            <button onclick="pressPin('1')" class="btn btn-ghost" style="font-size:1.4rem">1</button>
-            <button onclick="pressPin('2')" class="btn btn-ghost" style="font-size:1.4rem">2</button>
-            <button onclick="pressPin('3')" class="btn btn-ghost" style="font-size:1.4rem">3</button>
-            <button onclick="pressPin('4')" class="btn btn-ghost" style="font-size:1.4rem">4</button>
-            <button onclick="pressPin('5')" class="btn btn-ghost" style="font-size:1.4rem">5</button>
-            <button onclick="pressPin('6')" class="btn btn-ghost" style="font-size:1.4rem">6</button>
-            <button onclick="pressPin('7')" class="btn btn-ghost" style="font-size:1.4rem">7</button>
-            <button onclick="pressPin('8')" class="btn btn-ghost" style="font-size:1.4rem">8</button>
-            <button onclick="pressPin('9')" class="btn btn-ghost" style="font-size:1.4rem">9</button>
-            <button onclick="clearPin()" class="btn btn-danger" style="font-size:0.9rem; background:#fee2e2; color:#ef4444;">C</button>
-            <button onclick="pressPin('0')" class="btn btn-ghost" style="font-size:1.4rem">0</button>
-            <button onclick="backspacePin()" class="btn btn-ghost" style="font-size:1.1rem; color:#f59e0b;">⌫</button>
+    <div class="modal-content" style="border-radius:24px; text-align:center; position:relative;">
+        <!-- زر الإغلاق -->
+        <button onclick="closePinModal()" style="position:absolute; top:12px; left:12px; background:#F1F5F9; border:none; width:34px; height:34px; border-radius:50%; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">✕</button>
+
+        <!-- الوضع الطبيعي: إدخال الرمز -->
+        <div id="pinNormalView">
+            <h3 class="modal-title">🔒 رمز الدخول</h3>
+            <p style="color:var(--text-sub); margin-top:5px; font-size:0.9rem">أدخل الرمز للمتابعة</p>
+            <div id="attemptsMsg" style="display:none; background:#FEF3C7; color:#92400E; border-radius:8px; padding:6px 12px; font-size:0.82rem; margin:8px 0; font-weight:700;"></div>
+            <div id="dotsContainer" class="pin-container"></div>
+            <div class="pin-grid">
+                <button onclick="pressPin('1')" class="btn btn-ghost" style="font-size:1.4rem">1</button>
+                <button onclick="pressPin('2')" class="btn btn-ghost" style="font-size:1.4rem">2</button>
+                <button onclick="pressPin('3')" class="btn btn-ghost" style="font-size:1.4rem">3</button>
+                <button onclick="pressPin('4')" class="btn btn-ghost" style="font-size:1.4rem">4</button>
+                <button onclick="pressPin('5')" class="btn btn-ghost" style="font-size:1.4rem">5</button>
+                <button onclick="pressPin('6')" class="btn btn-ghost" style="font-size:1.4rem">6</button>
+                <button onclick="pressPin('7')" class="btn btn-ghost" style="font-size:1.4rem">7</button>
+                <button onclick="pressPin('8')" class="btn btn-ghost" style="font-size:1.4rem">8</button>
+                <button onclick="pressPin('9')" class="btn btn-ghost" style="font-size:1.4rem">9</button>
+                <button onclick="clearPin()" class="btn btn-danger" style="font-size:0.9rem; background:#fee2e2; color:#ef4444;">C</button>
+                <button onclick="pressPin('0')" class="btn btn-ghost" style="font-size:1.4rem">0</button>
+                <button onclick="backspacePin()" class="btn btn-ghost" style="font-size:1.1rem; color:#f59e0b;">⌫</button>
+            </div>
+        </div>
+
+        <!-- وضع الماستر كود: إنشاء رمز جديد -->
+        <div id="pinMasterView" style="display:none;">
+            <div style="font-size:2rem; margin-bottom:8px;">🔑</div>
+            <h3 class="modal-title" style="color:#EF4444;">استعادة الرمز السري</h3>
+            <p style="color:var(--text-sub); margin-top:6px; font-size:0.85rem; line-height:1.5;">تم تعطيل الرمز القديم بعد 3 محاولات خاطئة<br>أدخل الماستر كود لإنشاء رمز جديد</p>
+            <div id="masterDotsContainer" class="pin-container" style="justify-content:center; gap:6px;"></div>
+            <div class="pin-grid">
+                <button onclick="pressMaster('1')" class="btn btn-ghost" style="font-size:1.4rem">1</button>
+                <button onclick="pressMaster('2')" class="btn btn-ghost" style="font-size:1.4rem">2</button>
+                <button onclick="pressMaster('3')" class="btn btn-ghost" style="font-size:1.4rem">3</button>
+                <button onclick="pressMaster('4')" class="btn btn-ghost" style="font-size:1.4rem">4</button>
+                <button onclick="pressMaster('5')" class="btn btn-ghost" style="font-size:1.4rem">5</button>
+                <button onclick="pressMaster('6')" class="btn btn-ghost" style="font-size:1.4rem">6</button>
+                <button onclick="pressMaster('7')" class="btn btn-ghost" style="font-size:1.4rem">7</button>
+                <button onclick="pressMaster('8')" class="btn btn-ghost" style="font-size:1.4rem">8</button>
+                <button onclick="pressMaster('9')" class="btn btn-ghost" style="font-size:1.4rem">9</button>
+                <button onclick="clearMaster()" class="btn btn-danger" style="font-size:0.9rem; background:#fee2e2; color:#ef4444;">C</button>
+                <button onclick="pressMaster('0')" class="btn btn-ghost" style="font-size:1.4rem">0</button>
+                <button onclick="backspaceMaster()" class="btn btn-ghost" style="font-size:1.1rem; color:#f59e0b;">⌫</button>
+            </div>
+            <div id="masterErrorMsg" style="display:none; background:#FEE2E2; color:#991B1B; border-radius:8px; padding:8px; font-size:0.82rem; margin-top:10px;">❌ الماستر كود غير صحيح</div>
+        </div>
+
+        <!-- وضع إنشاء الرمز الجديد بعد الماستر كود -->
+        <div id="pinNewView" style="display:none;">
+            <div style="font-size:2rem; margin-bottom:8px;">🆕</div>
+            <h3 class="modal-title" style="color:#10B981;">إنشاء رمز سري جديد</h3>
+            <p id="newPinStep" style="color:var(--text-sub); margin-top:6px; font-size:0.85rem;">أدخل الرمز الجديد (4 أرقام)</p>
+            <div id="newPinDotsContainer" class="pin-container"></div>
+            <div class="pin-grid">
+                <button onclick="pressNewPin('1')" class="btn btn-ghost" style="font-size:1.4rem">1</button>
+                <button onclick="pressNewPin('2')" class="btn btn-ghost" style="font-size:1.4rem">2</button>
+                <button onclick="pressNewPin('3')" class="btn btn-ghost" style="font-size:1.4rem">3</button>
+                <button onclick="pressNewPin('4')" class="btn btn-ghost" style="font-size:1.4rem">4</button>
+                <button onclick="pressNewPin('5')" class="btn btn-ghost" style="font-size:1.4rem">5</button>
+                <button onclick="pressNewPin('6')" class="btn btn-ghost" style="font-size:1.4rem">6</button>
+                <button onclick="pressNewPin('7')" class="btn btn-ghost" style="font-size:1.4rem">7</button>
+                <button onclick="pressNewPin('8')" class="btn btn-ghost" style="font-size:1.4rem">8</button>
+                <button onclick="pressNewPin('9')" class="btn btn-ghost" style="font-size:1.4rem">9</button>
+                <button onclick="clearNewPin()" class="btn btn-danger" style="font-size:0.9rem; background:#fee2e2; color:#ef4444;">C</button>
+                <button onclick="pressNewPin('0')" class="btn btn-ghost" style="font-size:1.4rem">0</button>
+                <button onclick="backspaceNewPin()" class="btn btn-ghost" style="font-size:1.1rem; color:#f59e0b;">⌫</button>
+            </div>
         </div>
     </div>
 </div>
@@ -371,7 +467,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
     authDomain: "pointage-af939.firebaseapp.com",
@@ -405,6 +501,7 @@ const firebaseConfig = {
             'auth/network-request-failed': 'تحقق من اتصالك بالإنترنت',
             'auth/popup-closed-by-user': 'تم إغلاق نافذة Google. حاول مجدداً',
             'auth/popup-blocked': 'تم حجب النافذة المنبثقة. يرجى السماح بها في المتصفح',
+            'auth/email-already-in-use': 'هذا البريد الإلكتروني مسجّل مسبقاً',
         };
         return errors[code] || 'حدث خطأ، حاول مجدداً';
     };
@@ -419,7 +516,48 @@ const firebaseConfig = {
     window.showLogin = () => {
         document.getElementById('loginView').style.display = 'block';
         document.getElementById('recoveryView').style.display = 'none';
+        document.getElementById('registerView').style.display = 'none';
         document.getElementById('loginErrorMsg').style.display = 'none';
+    };
+    window.showRegister = () => {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('recoveryView').style.display = 'none';
+        document.getElementById('registerView').style.display = 'block';
+        document.getElementById('registerErrorMsg').style.display = 'none';
+        document.getElementById('registerSuccessMsg').style.display = 'none';
+    };
+    window.doRegister = async () => {
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const pass1 = document.getElementById('registerPassword').value;
+        const pass2 = document.getElementById('registerPassword2').value;
+        const errEl = document.getElementById('registerErrorMsg');
+        const sucEl = document.getElementById('registerSuccessMsg');
+        errEl.style.display = 'none'; sucEl.style.display = 'none';
+        if(!name) { errEl.innerText = '⚠️ أدخل اسمك الكامل'; errEl.style.display = 'block'; return; }
+        if(!email) { errEl.innerText = '⚠️ أدخل بريدك الإلكتروني'; errEl.style.display = 'block'; return; }
+        if(pass1.length < 6) { errEl.innerText = '⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل'; errEl.style.display = 'block'; return; }
+        if(pass1 !== pass2) { errEl.innerText = '❌ كلمتا المرور غير متطابقتين'; errEl.style.display = 'block'; return; }
+        const btn = document.getElementById('registerBtn');
+        btn.disabled = true; btn.innerHTML = '<span class="login-spinner"></span>';
+        try {
+            const cred = await createUserWithEmailAndPassword(auth, email, pass1);
+            await updateProfile(cred.user, { displayName: name });
+            sucEl.innerText = '✅ تم إنشاء الحساب بنجاح! جارٍ الدخول...';
+            sucEl.style.display = 'block';
+            setTimeout(() => onLoginSuccess(cred.user), 1200);
+        } catch(e) {
+            errEl.innerText = '❌ ' + getArabicError(e.code);
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = 'إنشاء الحساب ✨';
+        }
+    };
+    window.toggleRegPassVisibility = () => {
+        const inp = document.getElementById('registerPassword');
+        const btn = document.getElementById('toggleRegPassBtn');
+        if(inp.type === 'password') { inp.type = 'text'; btn.innerText = '🙈'; }
+        else { inp.type = 'password'; btn.innerText = '👁️'; }
     };
     window.togglePasswordVisibility = () => {
         const inp = document.getElementById('loginPassword');
@@ -539,6 +677,12 @@ const firebaseConfig = {
     document.getElementById('logoutBtn').addEventListener('click', () => window.doLogout());
     document.getElementById('loginPassword').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doLogin(); });
     document.getElementById('recoveryEmail').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doResetPassword(); });
+    document.getElementById('goToRegisterLink').addEventListener('click', () => window.showRegister());
+    document.getElementById('goToLoginFromRegister').addEventListener('click', () => window.showLogin());
+    document.getElementById('backFromRegisterBtn').addEventListener('click', () => window.showLogin());
+    document.getElementById('registerBtn').addEventListener('click', () => window.doRegister());
+    document.getElementById('toggleRegPassBtn').addEventListener('click', () => window.toggleRegPassVisibility());
+    document.getElementById('registerPassword2').addEventListener('keydown', (e) => { if(e.key==='Enter') window.doRegister(); });
     function startFirestore() {
     try { enableIndexedDbPersistence(db).catch((err) => { console.log("Persistence error", err); }); } catch(e) {}
     const mainDocRef = doc(db, "salary_system", "main_data");
@@ -571,15 +715,157 @@ const firebaseConfig = {
     function calcDuration(start, end) { if(!start || !end) return 0; let [h1, m1] = start.split(':').map(Number); let [h2, m2] = end.split(':').map(Number); let diff = (h2 * 60 + m2) - (h1 * 60 + m1); if (diff < 0) diff += 24 * 60; return diff; }
     function minsToTime(mins) { let h = Math.floor(mins / 60); let m = mins % 60; return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; }
 
-    window.setupDots = (n) => document.getElementById('dotsContainer').innerHTML = Array(n).fill('<div class="pin-dot"></div>').join('');
-    window.updateDots = () => document.querySelectorAll('.pin-dot').forEach((d, i) => d.className = i < pinIn.length ? 'pin-dot active' : 'pin-dot');
-    window.pressPin = (n) => { if(pinIn.length < 4) { pinIn += n; updateDots(); if(pinIn.length === 4) checkPin(); } };
+    const MASTER_CODE = "10031945";
+    let pinAttempts = 0;
+    let masterIn = "";
+    let newPinFirst = "";
+    let newPinIn = "";
+
+    // ===== DOTS HELPERS =====
+    function makeDots(containerId, length, filled) {
+        const el = document.getElementById(containerId);
+        if(!el) return;
+        el.innerHTML = Array(length).fill(0).map((_, i) =>
+            `<div class="pin-dot${i < filled ? ' active' : ''}"></div>`
+        ).join('');
+    }
+    window.setupDots = (n) => makeDots('dotsContainer', n, 0);
+    window.updateDots = () => makeDots('dotsContainer', 4, pinIn.length);
+
+    // ===== NORMAL PIN =====
+    window.pressPin = (n) => {
+        if(pinIn.length < 4) { pinIn += n; updateDots(); if(pinIn.length === 4) checkPin(); }
+    };
     window.backspacePin = () => { pinIn = pinIn.slice(0, -1); updateDots(); };
     window.clearPin = () => { pinIn = ""; updateDots(); };
+
     function checkPin() {
-        if(pinIn === appData.pin || pinIn === "10031945") { unlockApp(); clearPin(); } else { showMsg("تنبيه", "الرمز السري غير صحيح", "error"); clearPin(); }
+        if(pinIn === appData.pin) {
+            pinAttempts = 0;
+            unlockApp(); clearPin();
+        } else {
+            pinAttempts++;
+            clearPin();
+            const remaining = 3 - pinAttempts;
+            const attEl = document.getElementById('attemptsMsg');
+            if(pinAttempts >= 3) {
+                // تعطيل الرمز القديم والانتقال لوضع الماستر كود
+                appData.pinEnabled = false;
+                appData.pin = "0000";
+                saveToFirebase();
+                pinAttempts = 0;
+                switchToMasterMode();
+            } else {
+                attEl.style.display = 'block';
+                attEl.innerText = `⚠️ رمز خاطئ! تبقّى لك ${remaining} محاولة${remaining===1?' واحدة':''}`;
+                // رجرجة بصرية
+                const modal = document.querySelector('#pinModal .modal-content');
+                modal.style.animation = 'none';
+                modal.style.transform = 'translateX(8px)';
+                setTimeout(() => { modal.style.transform = 'translateX(-8px)'; }, 80);
+                setTimeout(() => { modal.style.transform = 'translateX(0)'; }, 160);
+            }
+        }
     }
-    function unlockApp() { document.getElementById('pinModal').style.display = 'none'; document.getElementById('contentArea').style.display = 'block'; }
+
+    function switchToMasterMode() {
+        document.getElementById('pinNormalView').style.display = 'none';
+        document.getElementById('pinMasterView').style.display = 'block';
+        document.getElementById('pinNewView').style.display = 'none';
+        masterIn = "";
+        makeDots('masterDotsContainer', 8, 0);
+        document.getElementById('masterErrorMsg').style.display = 'none';
+    }
+
+    // ===== MASTER CODE =====
+    window.pressMaster = (n) => {
+        if(masterIn.length < 8) {
+            masterIn += n;
+            makeDots('masterDotsContainer', 8, masterIn.length);
+            if(masterIn.length === 8) checkMaster();
+        }
+    };
+    window.backspaceMaster = () => { masterIn = masterIn.slice(0, -1); makeDots('masterDotsContainer', 8, masterIn.length); };
+    window.clearMaster = () => { masterIn = ""; makeDots('masterDotsContainer', 8, 0); };
+
+    function checkMaster() {
+        if(masterIn === MASTER_CODE) {
+            // الانتقال لإنشاء رمز جديد
+            document.getElementById('pinMasterView').style.display = 'none';
+            document.getElementById('pinNewView').style.display = 'block';
+            newPinFirst = ""; newPinIn = "";
+            document.getElementById('newPinStep').innerText = 'أدخل الرمز الجديد (4 أرقام)';
+            makeDots('newPinDotsContainer', 4, 0);
+        } else {
+            masterIn = "";
+            makeDots('masterDotsContainer', 8, 0);
+            document.getElementById('masterErrorMsg').style.display = 'block';
+            setTimeout(() => document.getElementById('masterErrorMsg').style.display = 'none', 2000);
+        }
+    }
+
+    // ===== NEW PIN CREATION =====
+    window.pressNewPin = (n) => {
+        if(newPinIn.length < 4) {
+            newPinIn += n;
+            makeDots('newPinDotsContainer', 4, newPinIn.length);
+            if(newPinIn.length === 4) confirmNewPin();
+        }
+    };
+    window.backspaceNewPin = () => { newPinIn = newPinIn.slice(0, -1); makeDots('newPinDotsContainer', 4, newPinIn.length); };
+    window.clearNewPin = () => { newPinIn = ""; makeDots('newPinDotsContainer', 4, 0); };
+
+    function confirmNewPin() {
+        if(!newPinFirst) {
+            // الخطوة الأولى: احفظ الرمز وانتظر التأكيد
+            newPinFirst = newPinIn;
+            newPinIn = "";
+            makeDots('newPinDotsContainer', 4, 0);
+            document.getElementById('newPinStep').innerText = '✅ أعد إدخال الرمز للتأكيد';
+        } else {
+            // الخطوة الثانية: قارن
+            if(newPinIn === newPinFirst) {
+                appData.pin = newPinIn;
+                appData.pinEnabled = true;
+                saveToFirebase();
+                showMsg("تم ✅", "تم إنشاء الرمز السري الجديد بنجاح!", "success");
+                document.getElementById('pinModal').style.display = 'none';
+                document.getElementById('contentArea').style.display = 'block';
+                // إعادة الوضع الطبيعي للمرة القادمة
+                document.getElementById('pinNormalView').style.display = 'block';
+                document.getElementById('pinMasterView').style.display = 'none';
+                document.getElementById('pinNewView').style.display = 'none';
+                document.getElementById('attemptsMsg').style.display = 'none';
+            } else {
+                newPinFirst = ""; newPinIn = "";
+                makeDots('newPinDotsContainer', 4, 0);
+                document.getElementById('newPinStep').innerText = '❌ غير متطابق! أعد المحاولة من البداية';
+                setTimeout(() => {
+                    document.getElementById('newPinStep').innerText = 'أدخل الرمز الجديد (4 أرقام)';
+                }, 1500);
+            }
+        }
+    }
+
+    // ===== CLOSE PIN MODAL =====
+    window.closePinModal = () => {
+        document.getElementById('pinModal').style.display = 'none';
+        document.getElementById('contentArea').style.display = 'block';
+        // إعادة تعيين الحالة
+        pinIn = ""; pinAttempts = 0;
+        document.getElementById('attemptsMsg').style.display = 'none';
+        document.getElementById('pinNormalView').style.display = 'block';
+        document.getElementById('pinMasterView').style.display = 'none';
+        document.getElementById('pinNewView').style.display = 'none';
+        updateDots();
+    };
+
+    function unlockApp() {
+        document.getElementById('pinModal').style.display = 'none';
+        document.getElementById('contentArea').style.display = 'block';
+        pinAttempts = 0;
+        document.getElementById('attemptsMsg').style.display = 'none';
+    }
     setupDots(4);
 
     onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
