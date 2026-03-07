@@ -578,6 +578,7 @@ const firebaseConfig = {
     }
 
     let firestoreStarted = false;
+    let masterModeActive = false; // منع onSnapshot من فتح التطبيق أثناء وضع الماستر كود
     function onLoginSuccess(user) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loader').style.display = 'flex';
@@ -769,6 +770,7 @@ const firebaseConfig = {
     }
 
     function switchToMasterMode() {
+        masterModeActive = true; // منع onSnapshot من فتح التطبيق
         document.getElementById('pinNormalView').style.display = 'none';
         document.getElementById('pinMasterView').style.display = 'block';
         document.getElementById('pinNewView').style.display = 'none';
@@ -825,6 +827,7 @@ const firebaseConfig = {
         } else {
             // الخطوة الثانية: قارن
             if(newPinIn === newPinFirst) {
+                masterModeActive = false; // السماح لـ onSnapshot بالعمل الطبيعي
                 appData.pin = newPinIn;
                 appData.pinEnabled = true;
                 saveToFirebase();
@@ -850,7 +853,7 @@ const firebaseConfig = {
     // ===== CLOSE PIN MODAL (إغلاق النافذة فقط - لا دخول للتطبيق) =====
     window.closePinModal = () => {
         document.getElementById('pinModal').style.display = 'none';
-        // إعادة تعيين الحالة فقط
+        masterModeActive = false; // إعادة تعيين وضع الماستر
         pinIn = ""; pinAttempts = 0;
         document.getElementById('attemptsMsg').style.display = 'none';
         document.getElementById('pinNormalView').style.display = 'block';
@@ -874,8 +877,19 @@ const firebaseConfig = {
         if (docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
-            if(appData.pinEnabled === undefined) appData.pinEnabled = true; 
-            if(appData.pinEnabled === false) { unlockApp(); } else { if(document.getElementById('contentArea').style.display === 'none') document.getElementById('pinModal').style.display = 'flex'; }
+            if(appData.pinEnabled === undefined) appData.pinEnabled = true;
+            if(appData.pinEnabled === false) {
+                // إذا كنا في وضع الماستر كود لا تفتح التطبيق
+                if(masterModeActive) {
+                    // لا تفعل شيئاً - انتظر إدخال الماستر كود
+                } else {
+                    unlockApp();
+                }
+            } else {
+                if(document.getElementById('contentArea').style.display === 'none') {
+                    document.getElementById('pinModal').style.display = 'flex';
+                }
+            }
             if(Array.isArray(appData.debts)) appData.debts = { in: appData.debts, out: [] };
             if(!appData.debts) appData.debts = { in: [], out: [] };
             applyIdentity(); renderCalendar(); updateAllSelects();
