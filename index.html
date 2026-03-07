@@ -188,6 +188,33 @@
             font-size: 0.8rem; font-weight: 700; color: #1E293B; border: 1px solid #E2E8F0;
         }
         .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: #2563EB; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+        /* مؤشر الاتصال الحقيقي */
+        .conn-dot {
+            width: 11px; height: 11px; border-radius: 50%;
+            background: #94A3B8; flex-shrink: 0;
+            transition: background 0.4s ease;
+            box-shadow: 0 0 0 0 rgba(16,185,129,0);
+        }
+        .conn-dot.online {
+            background: #10B981;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.25);
+            animation: pulseDot 2s infinite;
+        }
+        .conn-dot.offline {
+            background: #EF4444;
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.2);
+            animation: none;
+        }
+        .conn-dot.syncing {
+            background: #F59E0B;
+            animation: pulseDot 0.8s infinite;
+        }
+        @keyframes pulseDot {
+            0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+            70%  { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+        .conn-label { font-size: 0.72rem; color: #64748B; font-weight: 600; }
         .logout-btn { background: none; border: none; color: #EF4444; font-size: 0.8rem; cursor: pointer; font-family: 'Tajawal', sans-serif; font-weight: 700; padding: 0; }
         /* Register view */
         .switch-view-link { text-align: center; margin-top: 16px; font-size: 0.88rem; color: #64748B; }
@@ -304,8 +331,8 @@
 
 <!-- شارة المستخدم المسجّل -->
 <div class="user-badge" id="userBadge">
-    <div class="user-avatar" id="userAvatar">؟</div>
-    <span id="userDisplayName">مستخدم</span>
+    <div class="conn-dot" id="connDot"></div>
+    <span id="userDisplayName" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">مستخدم</span>
     <button class="logout-btn" id="logoutBtn">خروج</button>
 </div>
 
@@ -328,7 +355,7 @@
             </div>
             <div style="text-align: left;">
                 <img id="displayLogo" class="app-logo" src="" alt="Logo">
-                <div id="connStatus" class="status-badge" style="background:#E2E8F0; color:#64748B;">جاري التحقق...</div>
+                <div id="connStatus" style="display:none"></div>
             </div>
         </div>
     </div>
@@ -718,17 +745,30 @@ const firebaseConfig = {
     window.showPrompt = (title, text, placeholder, callback) => { document.getElementById('promptTitle').innerText = title; document.getElementById('promptBody').innerText = text; const inp = document.getElementById('promptInput'); inp.value = ""; inp.placeholder = placeholder || ""; document.getElementById('promptDialog').style.display = 'flex'; setTimeout(() => inp.focus(), 100); document.getElementById('promptOkBtn').onclick = () => { closeDialog('promptDialog'); if(inp.value) callback(inp.value); }; };
     window.closeDialog = (id) => document.getElementById(id).style.display = 'none';
 
-    function updateStatus(state) {
-        const el = document.getElementById('connStatus');
-        el.className = "status-badge"; el.style.background = ""; el.style.color = "";
-        if(!navigator.onLine || state === "offline") { el.innerText = "محفوظ في الهاتف 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; el.style.border = "1px solid #FED7AA"; return; }
-        if(state === "server") { el.innerText = "تم الرفع للسحابة ☁️"; el.style.background = "#D1FAE5"; el.style.color = "#065F46"; } 
-        else if(state === "cache") { el.innerText = "بالانتظار 💾"; el.style.background = "#FFEDD5"; el.style.color = "#9A3412"; } 
-        else if(state === "sync") { el.innerText = "جاري الرفع... ⏳"; el.style.background = "#FEF3C7"; el.style.color = "#92400E"; } 
-        else { el.innerText = "خطأ في الاتصال ❌"; el.style.background = "#FEE2E2"; el.style.color = "#991B1B"; el.style.border = "1px solid #FECACA"; }
+    function updateConnDot(state) {
+        const dot = document.getElementById('connDot');
+        if(!dot) return;
+        // إزالة كل الكلاسات
+        dot.className = 'conn-dot';
+        dot.title = '';
+        if(state === "server") {
+            dot.classList.add('online');
+            dot.title = 'متصل بالسحابة ☁️';
+        } else if(state === "cache" || state === "offline") {
+            dot.classList.add('offline');
+            dot.title = 'بيانات محلية — غير متصل 📴';
+        } else if(state === "sync") {
+            dot.classList.add('syncing');
+            dot.title = 'جارٍ المزامنة...';
+        } else {
+            dot.classList.add('offline');
+            dot.title = 'خطأ في الاتصال ❌';
+        }
     }
-    window.addEventListener('online',  () => updateStatus("sync"));
-    window.addEventListener('offline', () => updateStatus("offline"));
+    // الدالة القديمة تستدعي الجديدة (للتوافق)
+    function updateStatus(state) { updateConnDot(state); }
+    window.addEventListener('online',  () => updateConnDot("sync"));
+    window.addEventListener('offline', () => updateConnDot("offline"));
 
     const getNowStr = () => { let n = new Date(); return `${n.toLocaleDateString('ar-DZ')} ${n.getHours()}:${n.getMinutes().toString().padStart(2,'0')}`; };
     function calcDuration(start, end) { if(!start || !end) return 0; let [h1, m1] = start.split(':').map(Number); let [h2, m2] = end.split(':').map(Number); let diff = (h2 * 60 + m2) - (h1 * 60 + m1); if (diff < 0) diff += 24 * 60; return diff; }
@@ -890,8 +930,16 @@ const firebaseConfig = {
 
     onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
         document.getElementById('loader').style.display = 'none';
-        const source = docSnap.metadata.fromCache ? "cache" : "server";
-        if(!navigator.onLine) { updateStatus("offline"); } else { updateStatus(source); }
+        // المؤشر الحقيقي: هل البيانات من السحابة أم من الكاش؟
+        const fromCache = docSnap.metadata.fromCache;
+        const hasPendingWrites = docSnap.metadata.hasPendingWrites;
+        if(hasPendingWrites) {
+            updateConnDot("sync"); // جارٍ الرفع
+        } else if(fromCache) {
+            updateConnDot("cache"); // بيانات محلية
+        } else {
+            updateConnDot("server"); // بيانات حقيقية من السحابة ✅
+        }
         if (docSnap.exists()) {
             let d = docSnap.data();
             appData = { ...appData, ...d };
@@ -921,15 +969,13 @@ const firebaseConfig = {
         // إذا كان الخطأ permission-denied فهذا يعني مشكلة في قواعد Firestore
         if(err.code === 'permission-denied') {
             updateStatus("error");
-            document.getElementById('connStatus').innerText = "خطأ في الصلاحيات ⛔";
-            document.getElementById('connStatus').style.background = "#FEE2E2";
-            document.getElementById('connStatus').style.color = "#991B1B";
+            updateConnDot("error");
         }
     });
 
     async function saveToFirebase() {
-        if(navigator.onLine) updateStatus("sync");
-        try { await setDoc(mainDocRef, appData); } catch(e) { updateStatus("cache"); } 
+        updateConnDot("sync");
+        try { await setDoc(mainDocRef, appData); } catch(e) { updateConnDot("cache"); } 
     }
 
     function applyIdentity() {
