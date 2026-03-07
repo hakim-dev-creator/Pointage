@@ -340,6 +340,7 @@
     <div class="spinner"></div>
     <p style="margin-top:15px; font-weight:700; color:var(--text-sub); font-size:0.9rem">جاري الاتصال...</p>
     <div id="errorMsg" style="color:var(--danger); display:none"></div>
+    <button id="loaderRetryBtn" onclick="location.reload()" style="display:none; margin-top:15px; background:#2563EB; color:white; border:none; border-radius:10px; padding:10px 20px; font-family:Tajawal,sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer;">🔄 إعادة المحاولة</button>
 </div>
 
 <div id="msgDialog" class="dialog-overlay"><div class="custom-dialog"><span id="msgIcon" class="dialog-icon"></span><h3 id="msgTitle" class="dialog-title"></h3><p id="msgBody" class="dialog-msg"></p><button class="dialog-btn btn-confirm" onclick="closeDialog('msgDialog')">حسناً</button></div></div>
@@ -508,7 +509,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence, clearIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
@@ -624,6 +625,13 @@ const firebaseConfig = {
     function onLoginSuccess(user) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('loader').style.display = 'flex';
+        document.getElementById('loaderRetryBtn').style.display = 'none';
+        // timeout: إذا مرت 10 ثوانٍ بدون استجابة أظهر زر إعادة المحاولة
+        setTimeout(() => {
+            if(document.getElementById('loader').style.display !== 'none') {
+                document.getElementById('loaderRetryBtn').style.display = 'block';
+            }
+        }, 10000);
         const name = user.displayName || user.email.split('@')[0];
         const badge = document.getElementById('userBadge');
         badge.style.display = 'flex';
@@ -694,8 +702,6 @@ const firebaseConfig = {
         try {
             await signOut(auth);
             firestoreStarted = false;
-            // مسح كاش Firestore لمنع تسرب بيانات المستخدم السابق
-            try { await clearIndexedDbPersistence(db); } catch(e2) { console.log("Cache clear:", e2); }
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('userBadge').style.display = 'none';
             document.getElementById('contentArea').style.display = 'none';
