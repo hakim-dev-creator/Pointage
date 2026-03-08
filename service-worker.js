@@ -1,8 +1,8 @@
 // نظام الرواتب - Service Worker
 const CACHE_NAME = 'salary-system-v1';
 const ASSETS = [
-  '/',
-  '/index.html'
+  '/Pointage/',
+  '/Pointage/index.html'
 ];
 
 // تثبيت: حفظ الملفات في الكاش
