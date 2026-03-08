@@ -2,7 +2,7 @@
   "name": "Salary System",
   "short_name": "Salary",
   "description": "Salary & Attendance Management System",
-  "start_url": "/",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -16,16 +16,6 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
-    },
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
     }
   ],
   "categories": [
@@ -35,8 +25,7 @@
   "shortcuts": [
     {
       "name": "فتح التطبيق",
-      "url": "/",
-      "description": "نظام الرواتب"
+      "url": "/index.html"
     }
   ]
 }
