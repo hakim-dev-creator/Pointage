@@ -311,20 +311,74 @@
 
         <!-- نموذج استعادة كلمة المرور -->
         <div id="recoveryView">
-            <button class="back-btn" id="backToLoginBtn">➡ العودة لتسجيل الدخول</button>
-            <div class="login-logo-area" style="margin-bottom:16px">
-                <div style="font-size:2.5rem; margin-bottom:8px">🔑</div>
-                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#1E293B">استعادة كلمة المرور</h3>
-                <p style="margin:4px 0 0; font-size:0.82rem; color:#64748B">أدخل بريدك الإلكتروني وسنرسل لك رابط الاستعادة</p>
+            <!-- المرحلة 1: إدخال البريد -->
+            <div id="recoveryStep1">
+                <button class="back-btn" id="backToLoginBtn">➡ العودة لتسجيل الدخول</button>
+                <div class="login-logo-area" style="margin-bottom:20px">
+                    <div style="width:64px;height:64px;background:linear-gradient(135deg,#F59E0B,#D97706);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 12px;">🔑</div>
+                    <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1E293B">نسيت كلمة المرور؟</h3>
+                    <p style="margin:6px 0 0;font-size:0.83rem;color:#64748B;line-height:1.5">أدخل بريدك الإلكتروني وسنرسل لك<br>رابط لإعادة تعيين كلمة المرور</p>
+                </div>
+                <div class="login-input-group">
+                    <label class="login-input-label">البريد الإلكتروني</label>
+                    <input type="email" id="recoveryEmail" class="login-input" placeholder="example@gmail.com" dir="ltr">
+                </div>
+                <button class="btn-login" id="resetBtn">إرسال الرابط 📧</button>
+                <div id="recoveryErrorMsg" class="login-error-msg"></div>
             </div>
-            <div class="login-input-group">
-                <label class="login-input-label">البريد الإلكتروني</label>
-                <input type="email" id="recoveryEmail" class="login-input" placeholder="example@gmail.com" dir="ltr">
+
+            <!-- المرحلة 2: تأكيد الإرسال -->
+            <div id="recoveryStep2" style="display:none; text-align:center; padding:10px 0;">
+                <div style="width:72px;height:72px;background:linear-gradient(135deg,#10B981,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 20px;">✅</div>
+                <h3 style="margin:0 0 10px;font-size:1.15rem;font-weight:800;color:#1E293B">تم إرسال الرابط!</h3>
+                <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;padding:16px;margin-bottom:20px;">
+                    <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;font-weight:700">تفقّد بريدك الإلكتروني 📬</p>
+                    <p id="sentToEmail" style="margin:0;font-size:0.82rem;color:#15803D;direction:ltr"></p>
+                </div>
+                <div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:14px;padding:14px;margin-bottom:20px;text-align:right;">
+                    <p style="margin:0 0 8px;font-size:0.85rem;font-weight:700;color:#92400E">📋 خطوات إعادة التعيين:</p>
+                    <p style="margin:0;font-size:0.8rem;color:#78350F;line-height:1.8">
+                        ١. افتح البريد الإلكتروني<br>
+                        ٢. اضغط على الرابط المُرسَل<br>
+                        ٣. أدخل كلمة المرور الجديدة<br>
+                        ٤. عد للتطبيق وسجّل دخولك
+                    </p>
+                </div>
+                <p style="font-size:0.78rem;color:#94A3B8;margin-bottom:16px">لم يصلك البريد؟ تفقّد مجلد Spam</p>
+                <button class="btn-login" onclick="window.showLogin()" style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">
+                    العودة لتسجيل الدخول ➡
+                </button>
+                <button id="resendBtn" onclick="window.resendReset()" style="background:none;border:none;color:#2563EB;font-size:0.85rem;font-weight:700;cursor:pointer;margin-top:12px;display:block;width:100%;font-family:Tajawal,sans-serif;">
+                    إعادة الإرسال 🔄
+                </button>
             </div>
-            <button class="btn-login" id="resetBtn">إرسال رابط الاستعادة 📧</button>
-            <div id="recoveryErrorMsg" class="login-error-msg"></div>
-            <div id="recoverySuccessMsg" class="login-success-msg"></div>
         </div>
+    </div>
+</div>
+
+<!-- شاشة إعادة تعيين كلمة المرور (عند فتح رابط البريد) -->
+<div id="resetPasswordScreen" style="display:none; position:fixed; inset:0; background:linear-gradient(135deg,#1E3A8A,#2563EB); z-index:9999; display:none; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:24px; padding:32px 24px; width:100%; max-width:400px; text-align:center;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#2563EB,#1D4ED8);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 16px;">🔐</div>
+        <h2 style="margin:0 0 6px;font-size:1.2rem;font-weight:800;color:#1E293B">تعيين كلمة مرور جديدة</h2>
+        <p id="resetEmailLabel" style="margin:0 0 20px;font-size:0.82rem;color:#64748B;direction:ltr"></p>
+        <div style="position:relative;margin-bottom:16px;">
+            <input type="password" id="newPasswordInput" placeholder="كلمة المرور الجديدة" 
+                style="width:100%;padding:14px 44px 14px 14px;border:2px solid #E2E8F0;border-radius:12px;font-size:1rem;font-family:Tajawal,sans-serif;box-sizing:border-box;text-align:right;"
+                oninput="document.getElementById('resetPassError').style.display='none'">
+            <button onclick="toggleNewPass()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;" id="toggleNewPassBtn">👁️</button>
+        </div>
+        <div style="position:relative;margin-bottom:20px;">
+            <input type="password" id="confirmPasswordInput" placeholder="تأكيد كلمة المرور"
+                style="width:100%;padding:14px 44px 14px 14px;border:2px solid #E2E8F0;border-radius:12px;font-size:1rem;font-family:Tajawal,sans-serif;box-sizing:border-box;text-align:right;"
+                oninput="document.getElementById('resetPassError').style.display='none'">
+            <button onclick="toggleConfirmPass()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;" id="toggleConfirmPassBtn">👁️</button>
+        </div>
+        <div id="resetPassError" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:10px;margin-bottom:16px;font-size:0.85rem;color:#DC2626;"></div>
+        <button id="confirmResetBtn" onclick="window.doConfirmReset()"
+            style="width:100%;padding:14px;background:linear-gradient(135deg,#2563EB,#1D4ED8);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;font-family:Tajawal,sans-serif;cursor:pointer;">
+            حفظ كلمة المرور الجديدة ✅
+        </button>
     </div>
 </div>
 
@@ -509,7 +563,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, signOut, onAuthStateChanged, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAvM0V2tjyPfIV2iwkyGxyfMWh_T_hqq74",
     authDomain: "pointage-af939.firebaseapp.com",
@@ -558,7 +612,9 @@ const firebaseConfig = {
         document.getElementById('recoveryView').style.display = 'block';
         document.getElementById('recoveryEmail').value = document.getElementById('loginEmail').value;
         document.getElementById('recoveryErrorMsg').style.display = 'none';
-        document.getElementById('recoverySuccessMsg').style.display = 'none';
+        // إعادة تعيين للمرحلة الأولى
+        document.getElementById('recoveryStep1').style.display = 'block';
+        document.getElementById('recoveryStep2').style.display = 'none';
     };
     window.showLogin = () => {
         document.getElementById('loginView').style.display = 'block';
@@ -673,19 +729,35 @@ const firebaseConfig = {
     window.doResetPassword = async () => {
         const email = document.getElementById('recoveryEmail').value.trim();
         const errEl = document.getElementById('recoveryErrorMsg');
-        const sucEl = document.getElementById('recoverySuccessMsg');
-        errEl.style.display = 'none'; sucEl.style.display = 'none';
+        errEl.style.display = 'none';
         if(!email) { errEl.innerText = '⚠️ أدخل بريدك الإلكتروني أولاً'; errEl.style.display = 'block'; return; }
         setResetLoading(true);
         try {
             await sendPasswordResetEmail(auth, email);
-            sucEl.innerText = '✅ تم إرسال رابط الاستعادة! تفقّد بريدك الإلكتروني (وملف الرسائل غير المرغوب فيها)';
-            sucEl.style.display = 'block';
+            // إظهار المرحلة 2
+            document.getElementById('recoveryStep1').style.display = 'none';
+            document.getElementById('recoveryStep2').style.display = 'block';
+            document.getElementById('sentToEmail').innerText = email;
         } catch(e) {
             errEl.innerText = '❌ ' + getArabicError(e.code);
             errEl.style.display = 'block';
         }
         setResetLoading(false);
+    };
+    window.resendReset = async () => {
+        const email = document.getElementById('recoveryEmail').value.trim();
+        const btn = document.getElementById('resendBtn');
+        if(!email) return;
+        btn.disabled = true;
+        btn.innerText = 'جارٍ الإرسال...';
+        try {
+            await sendPasswordResetEmail(auth, email);
+            btn.innerText = '✅ تم إعادة الإرسال!';
+            setTimeout(() => { btn.disabled = false; btn.innerText = 'إعادة الإرسال 🔄'; }, 30000);
+        } catch(e) {
+            btn.disabled = false;
+            btn.innerText = 'إعادة الإرسال 🔄';
+        }
     };
 
     window.doLogout = async () => {
@@ -702,9 +774,91 @@ const firebaseConfig = {
             window.showLogin();
         } catch(e) { console.error(e); }
     };
-    // onAuthStateChanged يتعامل مع كل حالات الدخول (بريد + Google redirect)
+    // ===== معالجة روابط Firebase (إعادة تعيين كلمة المرور) =====
+    let resetOobCode = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const oobCode = urlParams.get('oobCode');
+
+    if (mode === 'resetPassword' && oobCode) {
+        // إخفاء شاشة الدخول وإظهار شاشة التعيين
+        document.getElementById('loginScreen').style.display = 'none';
+        const resetScreen = document.getElementById('resetPasswordScreen');
+        resetScreen.style.display = 'flex';
+
+        // التحقق من صلاحية الكود
+        verifyPasswordResetCode(auth, oobCode).then((email) => {
+            resetOobCode = oobCode;
+            document.getElementById('resetEmailLabel').innerText = email;
+        }).catch((e) => {
+            const errEl = document.getElementById('resetPassError');
+            errEl.innerText = '❌ الرابط منتهي الصلاحية أو مستخدم مسبقاً. يرجى طلب رابط جديد.';
+            errEl.style.display = 'block';
+            document.getElementById('confirmResetBtn').disabled = true;
+            setTimeout(() => {
+                resetScreen.style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                // نظّف الـ URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }, 3000);
+        });
+    }
+
+    window.doConfirmReset = async () => {
+        const newPass = document.getElementById('newPasswordInput').value;
+        const confirmPass = document.getElementById('confirmPasswordInput').value;
+        const errEl = document.getElementById('resetPassError');
+        const btn = document.getElementById('confirmResetBtn');
+
+        if (newPass.length < 6) {
+            errEl.innerText = '⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+            errEl.style.display = 'block'; return;
+        }
+        if (newPass !== confirmPass) {
+            errEl.innerText = '⚠️ كلمتا المرور غير متطابقتين';
+            errEl.style.display = 'block'; return;
+        }
+        if (!resetOobCode) {
+            errEl.innerText = '❌ انتهت صلاحية الرابط';
+            errEl.style.display = 'block'; return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = 'جارٍ الحفظ...';
+        try {
+            await confirmPasswordReset(auth, resetOobCode, newPass);
+            btn.innerText = '✅ تم تغيير كلمة المرور!';
+            btn.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+            setTimeout(() => {
+                document.getElementById('resetPasswordScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('loginEmail').value = document.getElementById('resetEmailLabel').innerText;
+                window.history.replaceState({}, '', window.location.pathname);
+            }, 2000);
+        } catch(e) {
+            btn.disabled = false;
+            btn.innerText = 'حفظ كلمة المرور الجديدة ✅';
+            errEl.innerText = '❌ ' + (getArabicError(e.code) || e.message);
+            errEl.style.display = 'block';
+        }
+    };
+
+    window.toggleNewPass = () => {
+        const inp = document.getElementById('newPasswordInput');
+        const btn = document.getElementById('toggleNewPassBtn');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+    };
+    window.toggleConfirmPass = () => {
+        const inp = document.getElementById('confirmPasswordInput');
+        const btn = document.getElementById('toggleConfirmPassBtn');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+    };
+
+    // onAuthStateChanged يتعامل مع كل حالات الدخول
     onAuthStateChanged(auth, (user) => {
-        if(user) onLoginSuccess(user);
+        if(user && mode !== 'resetPassword') onLoginSuccess(user);
     });
 
     // ===== BIND ALL LOGIN BUTTON EVENTS =====    document.getElementById('loginBtn').addEventListener('click', () => window.doLogin());
