@@ -2,8 +2,8 @@
   "name": "Salary System",
   "short_name": "Salary",
   "description": "Salary & Attendance Management System",
-  "start_url": "/Pointage/index.html",
-  "scope": "/Pointage/",
+  "start_url": "https://hakim-dev-creator.github.io/Pointage/index.html",
+  "scope": "https://hakim-dev-creator.github.io/Pointage/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#2563EB",
@@ -25,7 +25,7 @@
   "shortcuts": [
     {
       "name": "فتح التطبيق",
-      "url": "/Pointage/index.html"
+      "url": "https://hakim-dev-creator.github.io/Pointage/index.html"
     }
   ]
 }
